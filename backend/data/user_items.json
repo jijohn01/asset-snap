@@ -1,0 +1,22 @@
+[
+  { "id": "i0000000-0000-0000-0000-000000000001", "category": "assets.cash_savings", "label": "보통예금", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000002", "category": "assets.cash_savings", "label": "CMA", "sort_order": 1 },
+  { "id": "i0000000-0000-0000-0000-000000000003", "category": "assets.cash_savings", "label": "정기적금", "sort_order": 2 },
+  { "id": "i0000000-0000-0000-0000-000000000004", "category": "assets.investments", "label": "주식/ETF", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000005", "category": "assets.investments", "label": "청약저축", "sort_order": 1 },
+  { "id": "i0000000-0000-0000-0000-000000000006", "category": "assets.insurance_pension", "label": "연금저축", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000007", "category": "assets.insurance_pension", "label": "퇴직연금", "sort_order": 1 },
+  { "id": "i0000000-0000-0000-0000-000000000008", "category": "liabilities.long_term", "label": "전세자금대출", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000009", "category": "income.employment", "label": "급여", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000010", "category": "income.business", "label": "부업", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000011", "category": "expenses.savings_investment", "label": "정기적금", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000012", "category": "expenses.savings_investment", "label": "주식/펀드", "sort_order": 1 },
+  { "id": "i0000000-0000-0000-0000-000000000013", "category": "expenses.debt_repayment", "label": "대출원금", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000014", "category": "expenses.fixed_consumption", "label": "대출이자", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000015", "category": "expenses.fixed_consumption", "label": "공과금/관리비", "sort_order": 1 },
+  { "id": "i0000000-0000-0000-0000-000000000016", "category": "expenses.fixed_consumption", "label": "통신비", "sort_order": 2 },
+  { "id": "i0000000-0000-0000-0000-000000000017", "category": "expenses.variable_consumption", "label": "식비", "sort_order": 0 },
+  { "id": "i0000000-0000-0000-0000-000000000018", "category": "expenses.variable_consumption", "label": "교통비", "sort_order": 1 },
+  { "id": "i0000000-0000-0000-0000-000000000019", "category": "expenses.variable_consumption", "label": "여가/문화", "sort_order": 2 },
+  { "id": "i0000000-0000-0000-0000-000000000020", "category": "expenses.variable_consumption", "label": "기타", "sort_order": 3 }
+]
