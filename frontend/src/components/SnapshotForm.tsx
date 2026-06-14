@@ -8,6 +8,7 @@ interface UserItem {
   category: string;
   label: string;
   sort_order: number;
+  memo: string;
 }
 
 export type SnapshotDataPayload = {
@@ -118,6 +119,8 @@ export default function SnapshotForm({
   const [addingCategory, setAddingCategory] = useState<string | null>(null);
   const [newLabel, setNewLabel] = useState("");
   const newLabelInputRef = useRef<HTMLInputElement>(null);
+  const [editingMemoId, setEditingMemoId] = useState<string | null>(null);
+  const [memoValue, setMemoValue] = useState("");
 
   useEffect(() => {
     fetch(`${API_URL}/api/v1/user-items/`)
@@ -129,6 +132,23 @@ export default function SnapshotForm({
   useEffect(() => {
     if (addingCategory) newLabelInputRef.current?.focus();
   }, [addingCategory]);
+
+  function startEditMemo(item: UserItem) {
+    setEditingMemoId(item.id);
+    setMemoValue(item.memo ?? "");
+  }
+
+  async function saveMemo(itemId: string) {
+    setEditingMemoId(null);
+    await fetch(`${API_URL}/api/v1/user-items/${itemId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ memo: memoValue }),
+    });
+    setItems((prev) =>
+      prev.map((i) => (i.id === itemId ? { ...i, memo: memoValue } : i))
+    );
+  }
 
   async function handleDeleteItem(id: string) {
     await fetch(`${API_URL}/api/v1/user-items/${id}`, { method: "DELETE" });
@@ -225,11 +245,36 @@ export default function SnapshotForm({
                   <button
                     type="button"
                     onClick={() => handleDeleteItem(item.id)}
-                    className="shrink-0 px-2 py-2 text-gray-300 hover:text-red-400"
+                    className="shrink-0 self-start px-2 pt-2.5 text-gray-300 hover:text-red-400"
                   >
                     <X size={12} />
                   </button>
-                  <span className="flex-1 py-2 pr-2 text-sm text-gray-700">{item.label}</span>
+                  <div className="flex flex-1 flex-col py-1.5 pr-2">
+                    <span className="text-sm text-gray-700">{item.label}</span>
+                    {editingMemoId === item.id ? (
+                      <input
+                        type="text"
+                        autoFocus
+                        value={memoValue}
+                        onChange={(e) => setMemoValue(e.target.value)}
+                        onBlur={() => saveMemo(item.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveMemo(item.id);
+                          if (e.key === "Escape") setEditingMemoId(null);
+                        }}
+                        placeholder="메모 입력"
+                        className="mt-0.5 w-full bg-transparent text-xs text-gray-400 focus:outline-none focus:text-gray-600"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => startEditMemo(item)}
+                        className="mt-0.5 text-left text-xs text-gray-400 hover:text-gray-600"
+                      >
+                        {item.memo ? item.memo : <span className="text-gray-300">+ 메모</span>}
+                      </button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 pr-3">
                     <input
                       type="number"

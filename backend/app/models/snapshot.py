@@ -14,17 +14,20 @@ class UserItem(BaseModel):
     category: str
     label: str
     sort_order: int = 0
+    memo: str = ""
 
 
 class UserItemCreate(BaseModel):
     category: str
     label: str
     sort_order: int = 0
+    memo: str = ""
 
 
 class UserItemUpdate(BaseModel):
     label: str | None = None
     sort_order: int | None = None
+    memo: str | None = None
 
 
 class SnapshotCreate(BaseModel):

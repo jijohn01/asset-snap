@@ -17,7 +17,7 @@ def create_user_item(body: UserItemCreate):
 
 @router.put("/{item_id}", response_model=UserItem)
 def update_user_item(item_id: str, body: UserItemUpdate):
-    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    updates = {k: v for k, v in body.model_dump().items() if v is not None or k == "memo"}
     item = store.update_item(item_id, updates)
     if not item:
         raise HTTPException(status_code=404, detail="항목 없음")
