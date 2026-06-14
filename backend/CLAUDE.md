@@ -49,6 +49,8 @@ DELETE /api/v1/user-items/{id}     항목 삭제
 
 **주의:** `POST /snapshots/`는 동일 `snapshot_month`가 이미 존재하면 덮어씀 (upsert). ID가 아닌 월 기준.
 
+**주의:** `PUT /user-items/{id}` 는 `memo=""`(빈 문자열)로 메모 초기화 가능. `label`/`sort_order`는 `None`이면 무시하지만 `memo`는 예외 처리됨 (`user_items.py` 필터 참고).
+
 ## 환경 변수
 
 현재 필수 변수 없음 (local JSON mock 사용 중).

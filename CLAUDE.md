@@ -90,7 +90,7 @@ Python 환경 첫 설정: `backend/` 에서 `uv sync`
 |-------|-------------|
 | `/` | 대시보드 — 최신 스냅샷 기준 순자산 카드 + 트렌드 차트 |
 | `/history` | 월별 이력 목록 — 스냅샷 보기/수정/삭제 |
-| `/snapshot/new` | 새 스냅샷 입력 (4단계 폼) |
+| `/snapshot/new` | 새 스냅샷 입력 — 엑셀 스타일 2열 그리드, 직전 스냅샷 금액으로 미리채움 |
 | `/snapshot/[id]` | 기존 스냅샷 수정/삭제 |
 
 ## Data Model (핵심)
@@ -101,5 +101,5 @@ SnapshotData:
     └─ subcategory (e.g. "cash_savings")
          └─ item_id → amount (만원 단위 정수)
 
-user_items: 사용자 정의 항목 목록 (category, label, sort_order)
+user_items: 사용자 정의 항목 목록 (category, label, sort_order, memo)
 ```

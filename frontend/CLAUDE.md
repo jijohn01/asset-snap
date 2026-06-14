@@ -16,6 +16,13 @@ Run from `frontend/`:
 - `npm run build` — production build
 - `npm run lint` — ESLint
 
+## Key Components
+
+- `src/components/SnapshotForm.tsx` — 새 스냅샷/수정 페이지 공유 컴포넌트. 엑셀 스타일 2열 그리드.
+  - `initialAmounts?: Record<string, string>` 로 이전 금액 pre-fill
+  - 항목 추가/삭제, 인라인 메모 편집, 실시간 순자산/월잉여금 계산 포함
+  - `flattenAmounts()` 헬퍼로 nested snapshot data → `Record<string, string>` 변환 (new, [id] 페이지 각자 구현)
+
 ## Conventions
 
 - App Router only — no Pages Router.
