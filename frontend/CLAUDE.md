@@ -4,11 +4,10 @@
 
 - **Framework:** Next.js 15 (App Router), React 19, TypeScript
 - **Styling:** Tailwind CSS v4 — use `clsx` + `tailwind-merge` for conditional classes
-- **Auth/DB:** Supabase (`@supabase/supabase-js`, `@supabase/ssr` for server-side)
-- **Forms:** `react-hook-form` + `zod` for validation via `@hookform/resolvers`
+- **Auth/DB:** Supabase (`@supabase/supabase-js`, `@supabase/ssr`) — 아직 미연동 (Phase 2 예정)
 - **Charts:** `recharts`
 - **Icons:** `lucide-react`
-- **Dates:** `date-fns`
+- **설치됐으나 미사용:** `react-hook-form`, `zod`, `date-fns` — 현재 폼은 plain `useState` 사용
 
 ## Dev Commands
 
@@ -24,5 +23,5 @@ Run from `frontend/`:
   - `src/app/` — 라우트 및 페이지
   - `src/components/` — 공유 컴포넌트 (예: `layout/Sidebar.tsx`)
 - Server Components by default; add `"use client"` only when needed (event handlers, hooks, browser APIs).
-- Supabase: 아직 미연동 (Phase 2 예정) — 현재 데이터는 백엔드 FastAPI(`NEXT_PUBLIC_API_URL`)를 통해 호출.
+- 현재 데이터는 백엔드 FastAPI(`NEXT_PUBLIC_API_URL`)를 통해 호출.
 - `frontend/.env.local` 에 `NEXT_PUBLIC_API_URL=http://localhost:8000` 필요 (gitignored).

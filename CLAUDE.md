@@ -83,3 +83,23 @@ Always scope commands to the correct subdirectory (e.g., `npm ...` from `fronten
 - 백엔드: http://localhost:8000 / API 문서: http://localhost:8000/docs
 
 Python 환경 첫 설정: `backend/` 에서 `uv sync`
+
+## Pages & Routes
+
+| Route | Description |
+|-------|-------------|
+| `/` | 대시보드 — 최신 스냅샷 기준 순자산 카드 + 트렌드 차트 |
+| `/history` | 월별 이력 목록 — 스냅샷 보기/수정/삭제 |
+| `/snapshot/new` | 새 스냅샷 입력 (4단계 폼) |
+| `/snapshot/[id]` | 기존 스냅샷 수정/삭제 |
+
+## Data Model (핵심)
+
+```
+SnapshotData:
+  assets / liabilities / income / expenses
+    └─ subcategory (e.g. "cash_savings")
+         └─ item_id → amount (만원 단위 정수)
+
+user_items: 사용자 정의 항목 목록 (category, label, sort_order)
+```

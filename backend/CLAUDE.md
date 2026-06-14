@@ -32,6 +32,23 @@ data/                  # JSON 개발 데이터: snapshots.json, user_items.json
 
 새 엔드포인트 추가: `endpoints/`에 파일 생성 후 `api/v1/router.py`에 등록.
 
+## 엔드포인트 목록
+
+```
+GET    /api/v1/snapshots/          목록 (최신순)
+POST   /api/v1/snapshots/          생성 (같은 snapshot_month면 upsert)
+GET    /api/v1/snapshots/{id}      단건 조회
+PUT    /api/v1/snapshots/{id}      수정
+DELETE /api/v1/snapshots/{id}      삭제
+
+GET    /api/v1/user-items/         항목 목록
+POST   /api/v1/user-items/         항목 생성
+PUT    /api/v1/user-items/{id}     항목 수정
+DELETE /api/v1/user-items/{id}     항목 삭제
+```
+
+**주의:** `POST /snapshots/`는 동일 `snapshot_month`가 이미 존재하면 덮어씀 (upsert). ID가 아닌 월 기준.
+
 ## 환경 변수
 
 현재 필수 변수 없음 (local JSON mock 사용 중).
