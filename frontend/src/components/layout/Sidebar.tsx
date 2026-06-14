@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, PlusCircle, CalendarDays, Settings } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Settings } from "lucide-react";
 import { clsx } from "clsx";
 
 const NAV = [
   { href: "/", label: "대시보드", icon: LayoutDashboard },
-  { href: "/snapshot/new", label: "스냅샷 입력", icon: PlusCircle },
   { href: "/history", label: "월별 이력", icon: CalendarDays },
   { href: "/settings", label: "설정", icon: Settings },
 ] as const;
