@@ -35,6 +35,24 @@ def get_snapshot(snapshot_id: str):
     return _to_response(row)
 
 
+@router.put("/{snapshot_id}", response_model=SnapshotResponse)
+def update_snapshot(snapshot_id: str, body: SnapshotCreate):
+    if not store.get_snapshot(snapshot_id):
+        raise HTTPException(status_code=404, detail="스냅샷 없음")
+    metrics = calculate_metrics(body.data)
+    row = {
+        "snapshot_month": body.snapshot_month.isoformat(),
+        "data": body.data.model_dump(),
+        "total_assets": metrics.total_assets,
+        "total_liabilities": metrics.total_liabilities,
+        "net_worth": metrics.net_worth,
+        "monthly_income": metrics.monthly_income,
+        "monthly_expenses": metrics.monthly_expenses,
+        "monthly_surplus": metrics.monthly_surplus,
+    }
+    return _to_response(store.update_snapshot(snapshot_id, row))
+
+
 @router.delete("/{snapshot_id}", status_code=204)
 def delete_snapshot(snapshot_id: str):
     store.delete_snapshot(snapshot_id)

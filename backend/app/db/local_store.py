@@ -46,6 +46,18 @@ def save_snapshot(row: dict) -> dict:
     return row
 
 
+def update_snapshot(snapshot_id: str, row: dict) -> dict | None:
+    rows = _read(_SNAPSHOTS)
+    for i, r in enumerate(rows):
+        if r["id"] == snapshot_id:
+            row["id"] = snapshot_id
+            row["created_at"] = r["created_at"]
+            rows[i] = row
+            _write(_SNAPSHOTS, rows)
+            return row
+    return None
+
+
 def delete_snapshot(snapshot_id: str) -> None:
     _write(_SNAPSHOTS, [r for r in _read(_SNAPSHOTS) if r["id"] != snapshot_id])
 
