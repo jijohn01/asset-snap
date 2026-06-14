@@ -71,3 +71,15 @@ This is a monorepo with two workspaces:
 - `backend/` — FastAPI (Python) (see `backend/CLAUDE.md`)
 
 Always scope commands to the correct subdirectory (e.g., `npm ...` from `frontend/`, Python/uvicorn commands from `backend/`).
+
+## Quick Start
+
+```powershell
+# 백엔드 + 프론트엔드 동시 실행
+.\scripts\dev.ps1
+```
+
+- 프론트엔드: http://localhost:3000
+- 백엔드: http://localhost:8000 / API 문서: http://localhost:8000/docs
+
+Python 환경 첫 설정: `backend/` 에서 `uv sync`
