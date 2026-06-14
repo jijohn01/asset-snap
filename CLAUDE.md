@@ -63,3 +63,11 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## 5. Project Structure
+
+This is a monorepo with two workspaces:
+- `frontend/` — Next.js 15 + TypeScript (see `frontend/CLAUDE.md`)
+- `backend/` — FastAPI (Python) (see `backend/CLAUDE.md`)
+
+Always scope commands to the correct subdirectory (e.g., `npm ...` from `frontend/`, Python/uvicorn commands from `backend/`).
