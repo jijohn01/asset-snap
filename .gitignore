@@ -1,15 +1,19 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+# ── Frontend (Next.js) ────────────────────────────
+frontend/node_modules
+frontend/.pnp
+frontend/.pnp.js
+frontend/.yarn/install-state.gz
+frontend/.next/
+frontend/out/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
+# ── Backend (Python) ──────────────────────────────
+backend/.venv
+backend/__pycache__
+backend/**/__pycache__
+backend/**/*.pyc
+backend/.pytest_cache
 
 # production
 /build
