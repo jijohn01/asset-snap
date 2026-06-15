@@ -71,6 +71,13 @@ const SECTIONS = [
   },
 ] as const;
 
+const SECTION_COLORS: Record<string, { header: string; headerText: string; sub: string; subText: string }> = {
+  assets:      { header: "bg-blue-100",    headerText: "text-blue-900",    sub: "bg-blue-50",    subText: "text-blue-600" },
+  liabilities: { header: "bg-red-100",     headerText: "text-red-900",     sub: "bg-red-50",     subText: "text-red-600" },
+  income:      { header: "bg-emerald-100", headerText: "text-emerald-900", sub: "bg-emerald-50", subText: "text-emerald-600" },
+  expenses:    { header: "bg-amber-100",   headerText: "text-amber-900",   sub: "bg-amber-50",   subText: "text-amber-600" },
+};
+
 const SUBCATEGORY_LABELS: Record<string, string> = {
   "assets.cash_savings": "현금/저축",
   "assets.investments": "투자",
@@ -207,15 +214,16 @@ export default function SnapshotForm({
 
   function renderSection(sectionIdx: number) {
     const section = SECTIONS[sectionIdx];
+    const colors = SECTION_COLORS[section.id];
     const sectionItems = items.filter((i) => i.category.startsWith(section.id + "."));
     const sectionTotal = sumItems(sectionItems, amounts);
 
     return (
       <div key={section.id}>
         {/* 섹션 헤더 */}
-        <div className="flex items-center justify-between border border-gray-300 bg-gray-100 px-3 py-2">
-          <span className="text-sm font-bold text-gray-800">{section.label}</span>
-          <span className="text-sm font-semibold text-gray-600">{fmt(sectionTotal)} 만원</span>
+        <div className={`flex items-center justify-between border border-gray-300 px-3 py-2 ${colors.header}`}>
+          <span className={`text-sm font-bold ${colors.headerText}`}>{section.label}</span>
+          <span className={`text-sm font-semibold ${colors.headerText}`}>{fmt(sectionTotal)} 만원</span>
         </div>
 
         {section.subcategories.map((cat) => {
@@ -227,11 +235,11 @@ export default function SnapshotForm({
           return (
             <div key={cat}>
               {/* 소분류 헤더 */}
-              <div className="flex items-center justify-between border-x border-b border-gray-200 bg-gray-50 px-3 py-1.5">
-                <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+              <div className={`flex items-center justify-between border-x border-b border-gray-200 px-3 py-1.5 ${colors.sub}`}>
+                <span className={`text-xs font-semibold uppercase tracking-wide ${colors.subText}`}>
                   {SUBCATEGORY_LABELS[cat]}
                 </span>
-                <span className="text-xs text-gray-400">{catTotal > 0 ? fmt(catTotal) : "—"}</span>
+                <span className={`text-xs ${colors.subText}`}>{catTotal > 0 ? fmt(catTotal) : "—"}</span>
               </div>
 
               {/* 항목 행 */}
