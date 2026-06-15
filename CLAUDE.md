@@ -103,3 +103,38 @@ SnapshotData:
 
 user_items: 사용자 정의 항목 목록 (category, label, sort_order, memo)
 ```
+
+## 6. Worktree Policy
+
+**파일 수정이 포함된 모든 코딩 작업은 반드시 워크트리에서 진행한다.**
+
+### 워크트리 생성
+
+```bash
+git worktree add ../AssetNavigator-<slug> -b <branch>
+```
+
+- 작업은 `../AssetNavigator-<slug>` 경로에서만 진행. 메인 디렉터리(`AssetNavigator/`) 파일을 직접 수정하지 않는다.
+
+### 브랜치 이름 규칙
+
+`{type}/{issue-number}-{short-description}` (이슈 있을 때)
+`{type}/{short-description}` (이슈 없을 때)
+
+- **type:** `fix` (버그), `feat` (기능), `chore` (설정/정리), `refactor`, `docs`
+- **short-description:** 영문 kebab-case, 3단어 이내
+- 예: `fix/3-login-redirect`, `feat/5-csv-export`, `chore/2-worktree-policy`
+
+### 완료 후 정리
+
+```bash
+git push -u origin <branch>
+gh pr create ...
+# PR 머지 후
+git worktree remove ../AssetNavigator-<slug>
+```
+
+### 예외
+
+- 오타 수정 등 1줄 이하의 문서 변경
+- 사용자가 명시적으로 "워크트리 없이" 요청한 경우
