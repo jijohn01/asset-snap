@@ -62,10 +62,10 @@ function buildChartData(snapshots: Snapshot[]): ChartPoint[] {
   if (snapshots.length === 0) return [];
 
   const snapByMonth: Record<string, Snapshot> = {};
-  for (const s of snapshots) snapByMonth[s.snapshot_month] = s;
+  for (const s of snapshots) snapByMonth[s.snapshot_month.slice(0, 7)] = s;
 
-  const startMonth = snapshots[0].snapshot_month;
-  const endMonth = snapshots[snapshots.length - 1].snapshot_month;
+  const startMonth = snapshots[0].snapshot_month.slice(0, 7);
+  const endMonth = snapshots[snapshots.length - 1].snapshot_month.slice(0, 7);
 
   let lastTotals = { cash_savings: 0, investments: 0, insurance_pension: 0, real_estate: 0, personal_use: 0 };
   const result: ChartPoint[] = [];
