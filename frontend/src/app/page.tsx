@@ -8,6 +8,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceArea,
   PieChart,
   Pie,
   Cell,
@@ -149,6 +150,16 @@ export default function DashboardPage() {
 
   const totalPieValue = pieData.reduce((s, d) => s + d.value, 0);
 
+  const yearBands = chartData.reduce<{ year: string; start: string; end: string }[]>((bands, point) => {
+    const year = point.month.slice(0, 2);
+    if (bands.length === 0 || bands[bands.length - 1].year !== year) {
+      bands.push({ year, start: point.month, end: point.month });
+    } else {
+      bands[bands.length - 1].end = point.month;
+    }
+    return bands;
+  }, []);
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900">대시보드</h2>
@@ -193,6 +204,9 @@ export default function DashboardPage() {
             <>
               <ResponsiveContainer width="100%" height={180} className="mt-3">
                 <BarChart data={chartData} barCategoryGap="25%">
+                  {yearBands.map((band, i) => (
+                    <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#F3F4F6" : "transparent"} strokeOpacity={0} />
+                  ))}
                   <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                   <YAxis
                     tick={{ fontSize: 11 }}
