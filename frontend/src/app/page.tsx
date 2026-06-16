@@ -74,12 +74,21 @@ function buildChartData(snapshots: Snapshot[]): ChartPoint[] {
   while (cur <= endMonth) {
     const snap = snapByMonth[cur];
     if (snap) {
-      lastTotals = {
+      const raw = {
         cash_savings: sumItems(snap.data.assets.cash_savings ?? {}),
         investments: sumItems(snap.data.assets.investments ?? {}),
         insurance_pension: sumItems(snap.data.assets.insurance_pension ?? {}),
         real_estate: sumItems(snap.data.assets.real_estate ?? {}),
         personal_use: sumItems(snap.data.assets.personal_use ?? {}),
+      };
+      const totalAssets = Object.values(raw).reduce((s, v) => s + v, 0);
+      const scale = totalAssets > 0 ? snap.metrics.net_worth / totalAssets : 1;
+      lastTotals = {
+        cash_savings:      Math.round(raw.cash_savings      * scale),
+        investments:       Math.round(raw.investments       * scale),
+        insurance_pension: Math.round(raw.insurance_pension * scale),
+        real_estate:       Math.round(raw.real_estate       * scale),
+        personal_use:      Math.round(raw.personal_use      * scale),
       };
     }
     result.push({ month: cur.slice(2, 4) + "." + cur.slice(5, 7), isFilled: !snap, ...lastTotals });
@@ -179,7 +188,7 @@ export default function DashboardPage() {
       <div className="mt-4 grid grid-cols-3 gap-4">
         {/* 월별 자산 유형 스택 막대그래프 */}
         <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">월별 자산 구성</p>
+          <p className="text-sm font-medium text-gray-500">월별 순자산 구성</p>
           {hasData ? (
             <>
               <ResponsiveContainer width="100%" height={180} className="mt-3">
