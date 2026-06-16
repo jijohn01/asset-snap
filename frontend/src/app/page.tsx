@@ -38,7 +38,7 @@ const ASSET_LABELS: Record<string, string> = {
   personal_use: "개인사용자산",
 };
 
-const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe"];
+const PIE_COLORS = ["#3182F6", "#60a5fa", "#93c5fd", "#bfdbfe", "#dbeafe"];
 
 function sumValues(items: Record<string, number>) {
   return Object.values(items).reduce((s, v) => s + v, 0);
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => v.toLocaleString()} width={60} />
                 <Tooltip formatter={(v: number) => [fmt(v), "순자산"]} />
-                <Line type="monotone" dataKey="순자산" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="순자산" stroke="#3182F6" strokeWidth={2} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (

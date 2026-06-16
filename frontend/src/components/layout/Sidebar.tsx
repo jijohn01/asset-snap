@@ -29,7 +29,7 @@ export default function Sidebar() {
             className={clsx(
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
               pathname === href
-                ? "bg-indigo-600 text-white"
+                ? "bg-blue-500 text-white"
                 : "text-slate-400 hover:bg-slate-800 hover:text-white"
             )}
           >
