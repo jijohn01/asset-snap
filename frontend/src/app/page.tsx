@@ -14,6 +14,7 @@ import {
   Cell,
   Label,
 } from "recharts";
+import { colors } from "@/lib/colors";
 
 interface SnapshotMetrics {
   net_worth: number;
@@ -32,8 +33,8 @@ interface Snapshot {
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 const ASSET_CATEGORIES = [
-  { key: "cash_savings",      label: "현금/저축",  color: "#3182F6" },
-  { key: "investments",       label: "투자",       color: "#00B493" },
+  { key: "cash_savings",      label: "현금/저축",  color: colors.primary[500] },
+  { key: "investments",       label: "투자",       color: colors.positive },
   { key: "insurance_pension", label: "보험/연금",  color: "#F0A33B" },
   { key: "real_estate",       label: "부동산",     color: "#8B5CF6" },
   { key: "personal_use",      label: "개인사용",   color: "#6B7684" },
@@ -105,7 +106,7 @@ function fmt(val: number) {
 function DiffBadge({ amount, pct, isRatio }: { amount: number; pct: number; isRatio: boolean }) {
   const up = amount >= 0;
   const sign = up ? "▲" : "▼";
-  const cls = up ? "text-emerald-500" : "text-red-500";
+  const cls = up ? "text-positive" : "text-negative";
   const text = isRatio
     ? `${sign} ${Math.abs(amount).toFixed(1)}%p`
     : `${sign} ${Math.abs(amount).toLocaleString()}만원 (${Math.abs(pct).toFixed(1)}%)`;

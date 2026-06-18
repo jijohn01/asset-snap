@@ -292,7 +292,7 @@ export default function SnapshotForm({
                         setAmounts((prev) => ({ ...prev, [item.id]: e.target.value }))
                       }
                       placeholder="0"
-                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-blue-50 focus:outline-none"
+                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-primary-50 focus:outline-none"
                     />
                     <span className="shrink-0 text-xs text-gray-400">만원</span>
                   </div>
@@ -301,7 +301,7 @@ export default function SnapshotForm({
 
               {/* 항목 추가 행 */}
               {addingCategory === cat ? (
-                <div className="flex items-center gap-2 border-x border-b border-blue-300 bg-blue-50 px-3 py-1.5">
+                <div className="flex items-center gap-2 border-x border-b border-primary-300 bg-primary-50 px-3 py-1.5">
                   <input
                     ref={newLabelInputRef}
                     type="text"
@@ -314,14 +314,14 @@ export default function SnapshotForm({
                     placeholder="항목 이름"
                     className="flex-1 bg-transparent text-sm focus:outline-none"
                   />
-                  <button onClick={confirmAddItem} className="text-xs font-medium text-blue-600">확인</button>
+                  <button onClick={confirmAddItem} className="text-xs font-medium text-primary-600">확인</button>
                   <button onClick={() => { setAddingCategory(null); setNewLabel(""); }} className="text-xs text-gray-400">취소</button>
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={() => setAddingCategory(cat)}
-                  className="w-full border-x border-b border-gray-200 px-8 py-1.5 text-left text-xs text-blue-400 hover:bg-blue-50 hover:text-blue-600"
+                  className="w-full border-x border-b border-gray-200 px-8 py-1.5 text-left text-xs text-primary-300 hover:bg-primary-50 hover:text-primary-600"
                 >
                   + 항목 추가
                 </button>
@@ -342,7 +342,7 @@ export default function SnapshotForm({
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none"
         />
       </div>
 
@@ -356,9 +356,9 @@ export default function SnapshotForm({
             <div className="space-y-4">
               {renderSection(0)}
               {renderSection(1)}
-              <div className="flex items-center justify-between rounded bg-blue-50 px-3 py-2.5 text-sm font-semibold">
-                <span className="text-blue-700">순자산</span>
-                <span className={netWorth >= 0 ? "text-blue-700" : "text-red-600"}>
+              <div className="flex items-center justify-between rounded bg-primary-50 px-3 py-2.5 text-sm font-semibold">
+                <span className="text-primary-700">순자산</span>
+                <span className={netWorth >= 0 ? "text-primary-700" : "text-negative"}>
                   {fmt(netWorth)} 만원
                 </span>
               </div>
@@ -369,8 +369,8 @@ export default function SnapshotForm({
               {renderSection(2)}
               {renderSection(3)}
               <div className="flex items-center justify-between rounded bg-emerald-50 px-3 py-2.5 text-sm font-semibold">
-                <span className="text-emerald-700">월잉여금</span>
-                <span className={surplus >= 0 ? "text-emerald-700" : "text-red-600"}>
+                <span className="text-positive">월잉여금</span>
+                <span className={surplus >= 0 ? "text-positive" : "text-negative"}>
                   {fmt(surplus)} 만원
                 </span>
               </div>
@@ -397,7 +397,7 @@ export default function SnapshotForm({
               type="button"
               onClick={handleSave}
               disabled={submitting}
-              className="rounded-lg bg-blue-500 px-5 py-2 text-sm font-medium text-white hover:bg-blue-600 disabled:opacity-50"
+              className="rounded-lg bg-primary-500 px-5 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
             >
               {submitting ? "저장 중..." : saveLabel}
             </button>
