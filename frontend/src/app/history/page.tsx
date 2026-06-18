@@ -104,8 +104,8 @@ export default function HistoryPage() {
                   diffInfo.diff === 0 ? (
                     <span className="text-gray-400">─ 변동없음</span>
                   ) : (
-                    <span className={diffInfo.diff > 0 ? "text-green-600" : "text-red-500"}>
-                      {diffInfo.diff > 0 ? "▲" : "▼"} {diffInfo.diff > 0 ? "+" : ""}{fmt(diffInfo.diff)}
+                    <span className={diffInfo.diff > 0 ? "text-positive" : "text-negative"}>
+                      {diffInfo.diff > 0 ? "▲" : "▼"} {fmt(Math.abs(diffInfo.diff))}
                       {diffInfo.pct != null && ` (${Math.abs(diffInfo.pct).toFixed(1)}%)`}
                     </span>
                   )
