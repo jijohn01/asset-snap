@@ -11,6 +11,7 @@
 ## 개발 명령어
 
 `backend/` 디렉터리에서 실행:
+- `uv sync` — 초기 환경 설정 / 의존성 설치
 - `uv run uvicorn app.main:app --reload` — 개발 서버 시작 (http://localhost:8000)
 - 또는 루트에서 `scripts/dev.ps1` — 프론트엔드 + 백엔드 동시 실행 (별도 터미널)
 - 헬스 체크: `GET /health`
@@ -45,6 +46,8 @@ GET    /api/v1/user-items/         항목 목록
 POST   /api/v1/user-items/         항목 생성
 PUT    /api/v1/user-items/{id}     항목 수정
 DELETE /api/v1/user-items/{id}     항목 삭제
+
+GET    /health                     헬스 체크
 ```
 
 **주의:** `POST /snapshots/`는 동일 `snapshot_month`가 이미 존재하면 덮어씀 (upsert). ID가 아닌 월 기준.

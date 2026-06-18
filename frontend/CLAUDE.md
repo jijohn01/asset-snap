@@ -18,6 +18,10 @@ Run from `frontend/`:
 
 ## Key Components
 
+- `src/lib/colors.ts` — 공유 색상 팔레트. JS 상수(`colors.primary[500]` 등)는 recharts에서 직접 사용, CSS vars(`--color-primary-500`)는 `globals.css @theme`에서 Tailwind utility 클래스로 생성됨.
+  - Tailwind v4 패턴: `globals.css`의 `--color-primary-500` → `bg-primary-500`, `text-primary-500` 유틸리티 자동 생성. 새 색상 추가 시 두 파일 모두 수정 필요.
+  - 토스 팔레트: primary `#3182F6`, positive `#00B493`, negative `#F04452`
+
 - `src/components/SnapshotForm.tsx` — 새 스냅샷/수정 페이지 공유 컴포넌트. 엑셀 스타일 2열 그리드.
   - `initialAmounts?: Record<string, string>` 로 이전 금액 pre-fill
   - 항목 추가/삭제, 인라인 메모 편집, 실시간 순자산/월잉여금 계산 포함
@@ -25,6 +29,7 @@ Run from `frontend/`:
 
 ## Conventions
 
+- **Worktree 주의:** `git worktree add` 후 `frontend/`에서 `npm install` 필요 — node_modules는 워크트리 간 공유되지 않음.
 - App Router only — no Pages Router.
 - `src/` 구조 사용 — 앱 코드는 `frontend/src/` 아래에 위치.
   - `src/app/` — 라우트 및 페이지
