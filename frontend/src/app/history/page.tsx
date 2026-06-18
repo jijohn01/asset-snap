@@ -22,6 +22,15 @@ function fmt(val: number) {
   return val.toLocaleString() + "만원";
 }
 
+function calcDiff(snapshots: Snapshot[], idx: number) {
+  if (idx >= snapshots.length - 1) return null;
+  const curr = snapshots[idx].metrics.net_worth;
+  const prev = snapshots[idx + 1].metrics.net_worth;
+  const diff = curr - prev;
+  const pct = prev !== 0 ? (diff / Math.abs(prev)) * 100 : null;
+  return { diff, pct };
+}
+
 function fmtMonth(iso: string) {
   const [year, month] = iso.split("-");
   return `${year}년 ${parseInt(month)}월`;
@@ -80,7 +89,9 @@ export default function HistoryPage() {
             </Link>
           </div>
         )}
-        {snapshots.map((s) => (
+        {snapshots.map((s, idx) => {
+          const diffInfo = calcDiff(snapshots, idx);
+          return (
           <div
             key={s.id}
             className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
@@ -89,6 +100,16 @@ export default function HistoryPage() {
               <p className="text-sm font-semibold text-gray-700">{fmtMonth(s.snapshot_month)}</p>
               <div className="mt-1 flex gap-4 text-xs text-gray-400">
                 <span>순자산 {fmt(s.metrics.net_worth)}</span>
+                {diffInfo && (
+                  diffInfo.diff === 0 ? (
+                    <span className="text-gray-400">─ 변동없음</span>
+                  ) : (
+                    <span className={diffInfo.diff > 0 ? "text-green-600" : "text-red-500"}>
+                      {diffInfo.diff > 0 ? "▲" : "▼"} {diffInfo.diff > 0 ? "+" : ""}{fmt(diffInfo.diff)}
+                      {diffInfo.pct != null && ` (${Math.abs(diffInfo.pct).toFixed(1)}%)`}
+                    </span>
+                  )
+                )}
                 <span>자산 {fmt(s.metrics.total_assets)}</span>
                 <span>부채 {fmt(s.metrics.total_liabilities)}</span>
                 <span>월잉여금 {fmt(s.metrics.monthly_surplus)}</span>
@@ -113,7 +134,8 @@ export default function HistoryPage() {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
