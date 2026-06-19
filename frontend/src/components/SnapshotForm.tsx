@@ -60,10 +60,10 @@ const SECTIONS = [
 ] as const;
 
 const SECTION_COLORS: Record<string, { header: string; headerText: string; sub: string; subText: string }> = {
-  assets:      { header: "bg-blue-100",    headerText: "text-blue-900",    sub: "bg-blue-50",    subText: "text-blue-600" },
-  liabilities: { header: "bg-red-100",     headerText: "text-red-900",     sub: "bg-red-50",     subText: "text-red-600" },
-  income:      { header: "bg-emerald-100", headerText: "text-emerald-900", sub: "bg-emerald-50", subText: "text-emerald-600" },
-  expenses:    { header: "bg-amber-100",   headerText: "text-amber-900",   sub: "bg-amber-50",   subText: "text-amber-600" },
+  assets:      { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
+  liabilities: { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
+  income:      { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
+  expenses:    { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
 };
 
 const SUBCATEGORY_LABELS: Record<string, string> = {
@@ -178,7 +178,7 @@ export default function SnapshotForm({
 
     return (
       <div key={section.id}>
-        <div className={`flex items-center justify-between border border-gray-300 px-3 py-2 ${colors.header}`}>
+        <div className={`flex items-center justify-between border border-[#E4E4E7] px-3 py-2 ${colors.header}`}>
           <span className={`text-sm font-bold ${colors.headerText}`}>{section.label}</span>
           <span className={`text-sm font-semibold ${colors.headerText}`}>{fmt(sectionTotal)} 만원</span>
         </div>
@@ -191,7 +191,7 @@ export default function SnapshotForm({
 
           return (
             <div key={cat}>
-              <div className={`flex items-center justify-between border-x border-b border-gray-200 px-3 py-1.5 ${colors.sub}`}>
+              <div className={`flex items-center justify-between border-x border-b border-[#E4E4E7] px-3 py-1.5 ${colors.sub}`}>
                 <span className={`text-xs font-semibold uppercase tracking-wide ${colors.subText}`}>
                   {SUBCATEGORY_LABELS[cat]}
                 </span>
@@ -201,7 +201,7 @@ export default function SnapshotForm({
               {catItems.map(([itemId, item], idx) => (
                 <div
                   key={itemId}
-                  className={`flex items-center border-x border-b border-gray-200 ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
+                  className={`flex items-center border-x border-b border-[#E4E4E7] ${idx % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"}`}
                 >
                   <button
                     type="button"
@@ -243,7 +243,7 @@ export default function SnapshotForm({
                       value={item.amount || ""}
                       onChange={(e) => setAmount(itemId, e.target.value)}
                       placeholder="0"
-                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-primary-50 focus:outline-none"
+                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-[#F5F5F7] focus:outline-none"
                     />
                     <span className="shrink-0 text-xs text-gray-400">만원</span>
                   </div>
@@ -251,7 +251,7 @@ export default function SnapshotForm({
               ))}
 
               {addingCategory === cat ? (
-                <div className="flex items-center gap-2 border-x border-b border-primary-300 bg-primary-50 px-3 py-1.5">
+                <div className="flex items-center gap-2 border-x border-b border-[#E4E4E7] bg-[#F5F5F7] px-3 py-1.5">
                   <input
                     ref={newLabelInputRef}
                     type="text"
@@ -272,7 +272,7 @@ export default function SnapshotForm({
                 <button
                   type="button"
                   onClick={() => setAddingCategory(cat)}
-                  className="w-full border-x border-b border-gray-200 px-8 py-1.5 text-left text-xs text-primary-300 hover:bg-primary-50 hover:text-primary-600"
+                  className="w-full border-x border-b border-[#E4E4E7] px-8 py-1.5 text-left text-xs text-[#AAAAAA] hover:bg-[#F5F5F7] hover:text-primary-600"
                 >
                   + 항목 추가
                 </button>
@@ -287,12 +287,12 @@ export default function SnapshotForm({
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <label className="text-sm font-medium text-gray-700">기준 월</label>
+        <label className="text-sm font-medium text-[#6B6B6B]">기준 월</label>
         <input
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none"
+          className="rounded-lg border border-[#E4E4E7] px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none"
         />
       </div>
 
@@ -300,9 +300,9 @@ export default function SnapshotForm({
         <div className="space-y-4">
           {renderSection(0)}
           {renderSection(1)}
-          <div className="flex items-center justify-between rounded bg-primary-50 px-3 py-2.5 text-sm font-semibold">
-            <span className="text-primary-700">순자산</span>
-            <span className={netWorth >= 0 ? "text-primary-700" : "text-negative"}>
+          <div className="flex items-center justify-between rounded border border-[#E4E4E7] bg-[#F5F5F7] px-3 py-2.5 text-sm font-semibold">
+            <span className="text-[#6B6B6B]">순자산</span>
+            <span className={netWorth >= 0 ? "text-[#111111]" : "text-negative"}>
               {fmt(netWorth)} 만원
             </span>
           </div>
@@ -311,8 +311,8 @@ export default function SnapshotForm({
         <div className="space-y-4">
           {renderSection(2)}
           {renderSection(3)}
-          <div className="flex items-center justify-between rounded bg-emerald-50 px-3 py-2.5 text-sm font-semibold">
-            <span className="text-positive">월잉여금</span>
+          <div className="flex items-center justify-between rounded border border-[#E4E4E7] bg-[#F5F5F7] px-3 py-2.5 text-sm font-semibold">
+            <span className="text-[#6B6B6B]">월잉여금</span>
             <span className={surplus >= 0 ? "text-positive" : "text-negative"}>
               {fmt(surplus)} 만원
             </span>

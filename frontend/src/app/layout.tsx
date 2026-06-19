@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="flex h-screen overflow-hidden bg-gray-50 text-gray-900 antialiased">
+      <body className="flex h-screen overflow-hidden bg-[#F5F5F7] text-[#111111] antialiased">
         <Sidebar />
         <main className="flex-1 overflow-y-auto p-8">{children}</main>
       </body>

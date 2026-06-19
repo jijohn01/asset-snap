@@ -125,6 +125,15 @@ export default function DashboardPage() {
       ]
     : null;
 
+  const heroCard = cardDefs ? cardDefs[0] : null;
+  const heroDiff =
+    heroCard && heroCard.prevVal !== undefined && heroCard.prevVal !== 0
+      ? {
+          amount: heroCard.curr - heroCard.prevVal,
+          pct: ((heroCard.curr - heroCard.prevVal) / Math.abs(heroCard.prevVal)) * 100,
+        }
+      : null;
+
   const chartData = buildChartData(snapshots);
 
   const pieData = latest
@@ -149,28 +158,46 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900">대시보드</h2>
-      <p className="mt-1 text-sm text-gray-500">
+      <h2 className="text-2xl font-bold text-[#111111]">대시보드</h2>
+      <p className="mt-1 text-sm text-[#6B6B6B]">
         {latest ? `${latest.snapshot_month.slice(0, 7)} 스냅샷 기준` : "최신 스냅샷 기준"} 자산 현황
       </p>
 
-      <div className="mt-6 grid grid-cols-4 gap-4">
+      {/* 순자산 히어로 */}
+      <div className="mt-6 rounded-xl border border-[#E4E4E7] bg-white px-6 py-5">
+        <p className="text-xs font-medium uppercase tracking-wider text-[#6B6B6B]">순자산</p>
+        {!hasData ? (
+          <p className="mt-1 text-5xl font-bold text-[#D0D0D0]">{loading ? "..." : "—"}</p>
+        ) : (
+          <>
+            <p className="mt-1 text-5xl font-bold text-[#111111]">{heroCard!.display}</p>
+            {heroDiff && (
+              <div className="mt-2">
+                <DiffBadge amount={heroDiff.amount} pct={heroDiff.pct} isRatio={false} />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* 보조 지표 */}
+      <div className="mt-3 grid grid-cols-3 gap-3">
         {!hasData
-          ? ["순자산", "자기자본비율", "월소득", "월잉여금"].map((label) => (
-              <div key={label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-medium text-gray-500">{label}</p>
-                <p className="mt-2 text-2xl font-bold text-gray-300">{loading ? "..." : "—"}</p>
+          ? ["자기자본비율", "월소득", "월잉여금"].map((label) => (
+              <div key={label} className="rounded-xl border border-[#E4E4E7] bg-white p-4">
+                <p className="text-xs font-medium text-[#6B6B6B]">{label}</p>
+                <p className="mt-2 text-2xl font-semibold text-[#D0D0D0]">{loading ? "..." : "—"}</p>
               </div>
             ))
-          : cardDefs!.map(({ label, curr, prevVal, display, isRatio }) => {
+          : cardDefs!.slice(1).map(({ label, curr, prevVal, display, isRatio }) => {
               const diff =
                 prevVal !== undefined && prevVal !== 0
                   ? { amount: curr - prevVal, pct: ((curr - prevVal) / Math.abs(prevVal)) * 100 }
                   : null;
               return (
-                <div key={label} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <p className="text-xs font-medium text-gray-500">{label}</p>
-                  <p className="mt-2 text-2xl font-bold text-gray-900">{display}</p>
+                <div key={label} className="rounded-xl border border-[#E4E4E7] bg-white p-4">
+                  <p className="text-xs font-medium text-[#6B6B6B]">{label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-[#111111]">{display}</p>
                   {diff && (
                     <div className="mt-1">
                       <DiffBadge amount={diff.amount} pct={diff.pct} isRatio={isRatio} />
@@ -182,20 +209,22 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-4">
-        <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">월별 순자산 구성</p>
+        <div className="col-span-2 rounded-xl border border-[#E4E4E7] bg-white p-5">
+          <p className="text-sm font-medium text-[#6B6B6B]">월별 순자산 구성</p>
           {hasData ? (
             <>
               <ResponsiveContainer width="100%" height={180} className="mt-3">
                 <BarChart data={chartData} barCategoryGap="25%">
                   {yearBands.map((band, i) => (
-                    <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#F3F4F6" : "transparent"} strokeOpacity={0} />
+                    <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#F5F5F7" : "transparent"} strokeOpacity={0} />
                   ))}
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9B9B9B" }} axisLine={false} tickLine={false} />
                   <YAxis
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 11, fill: "#9B9B9B" }}
                     tickFormatter={(v) => (v >= 10000 ? `${(v / 10000).toFixed(0)}억` : v.toLocaleString())}
                     width={52}
+                    axisLine={false}
+                    tickLine={false}
                   />
                   <Tooltip formatter={(v: number) => fmt(v)} />
                   {ASSET_CATEGORIES.map((cat) => (
@@ -209,26 +238,26 @@ export default function DashboardPage() {
               </ResponsiveContainer>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                 {ASSET_CATEGORIES.map((cat) => (
-                  <span key={cat.key} className="flex items-center gap-1 text-xs text-gray-500">
+                  <span key={cat.key} className="flex items-center gap-1 text-xs text-[#9B9B9B]">
                     <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
                     {cat.label}
                   </span>
                 ))}
-                <span className="flex items-center gap-1 text-xs text-gray-400">
-                  <span className="inline-block h-2 w-2 rounded-full bg-gray-300" />
+                <span className="flex items-center gap-1 text-xs text-[#C0C0C0]">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#CCCCCC]" />
                   연한 색 = 추정값 (이전 스냅샷 유지)
                 </span>
               </div>
             </>
           ) : (
-            <div className="mt-4 flex h-44 items-center justify-center text-sm text-gray-300">
+            <div className="mt-4 flex h-44 items-center justify-center text-sm text-[#D0D0D0]">
               {loading ? "불러오는 중..." : "스냅샷 데이터 없음"}
             </div>
           )}
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-gray-500">자산 구성</p>
+        <div className="rounded-xl border border-[#E4E4E7] bg-white p-5">
+          <p className="text-sm font-medium text-[#6B6B6B]">자산 구성</p>
           {pieData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={140} className="mt-2">
@@ -247,8 +276,8 @@ export default function DashboardPage() {
                         const vb = viewBox as { cx: number; cy: number };
                         return (
                           <text x={vb.cx} y={vb.cy} textAnchor="middle" dominantBaseline="middle">
-                            <tspan x={vb.cx} dy="-8" fontSize="10" fill="#6B7280">총 자산</tspan>
-                            <tspan x={vb.cx} dy="17" fontSize="12" fontWeight="bold" fill="#111827">
+                            <tspan x={vb.cx} dy="-8" fontSize="10" fill="#6B6B6B">총 자산</tspan>
+                            <tspan x={vb.cx} dy="17" fontSize="12" fontWeight="bold" fill="#111111">
                               {totalPieValue.toLocaleString()}
                             </tspan>
                           </text>
@@ -264,18 +293,18 @@ export default function DashboardPage() {
               </ResponsiveContainer>
               <div className="mt-2 space-y-1">
                 {pieData.map((d) => (
-                  <div key={d.name} className="flex items-center justify-between text-xs text-gray-600">
+                  <div key={d.name} className="flex items-center justify-between text-xs text-[#6B6B6B]">
                     <span className="flex items-center gap-1.5">
                       <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
                       {d.name}
                     </span>
-                    <span className="text-gray-500">{d.value.toLocaleString()}만</span>
+                    <span className="text-[#9B9B9B]">{d.value.toLocaleString()}만</span>
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <div className="mt-4 flex h-40 items-center justify-center text-sm text-gray-300">
+            <div className="mt-4 flex h-40 items-center justify-center text-sm text-[#D0D0D0]">
               {loading ? "불러오는 중..." : "스냅샷 데이터 없음"}
             </div>
           )}
