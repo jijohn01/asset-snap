@@ -15,11 +15,11 @@ test.describe("대시보드", () => {
 
   test("대시보드 핵심 요소 렌더링", async ({ page }) => {
     await expect(page.locator("nav")).toBeVisible();
-    await expect(page.getByText("순자산")).toBeVisible();
+    await expect(page.getByText("순자산", { exact: true })).toBeVisible();
   });
 
   test("사이드바 네비게이션 링크 노출", async ({ page }) => {
-    await expect(page.getByRole("link", { name: /히스토리|history/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /스냅샷|snapshot/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /월별 이력/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /설정/i })).toBeVisible();
   });
 });

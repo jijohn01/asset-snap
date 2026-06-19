@@ -14,7 +14,7 @@ test.describe("인증", () => {
     await page.fill('input[type="email"]', EMAIL);
     await page.fill('input[type="password"]', "wrong-password-123");
     await page.click('button[type="submit"]');
-    await expect(page.locator("text=Invalid")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("text=이메일 또는 비밀번호가 올바르지 않습니다")).toBeVisible({ timeout: 5000 });
   });
 
   test("올바른 자격증명으로 로그인 후 대시보드 이동", async ({ page }) => {
