@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     supabase_service_role_key: str = ""
     supabase_anon_key: str = ""
     supabase_password: str = ""  # psycopg2 직접 연결용 (마이그레이션 스크립트)
+    supabase_jwt_secret: str = ""
 
     @field_validator("allowed_origins", mode="before")
     @classmethod

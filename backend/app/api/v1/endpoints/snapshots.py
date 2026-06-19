@@ -1,15 +1,10 @@
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from app.api.deps import get_current_user
 from app.models.snapshot import SnapshotCreate, SnapshotItem, SnapshotResponse
 from app.services.calculations import calculate_metrics
 from app.db import supabase as db
 
 router = APIRouter()
-
-
-def _require_user(x_user_id: str | None) -> str:
-    if not x_user_id:
-        raise HTTPException(status_code=401, detail="X-User-ID 헤더 필요")
-    return x_user_id
 
 
 def _require_role(group_id: str, user_id: str, *allowed: str) -> None:
@@ -19,15 +14,13 @@ def _require_role(group_id: str, user_id: str, *allowed: str) -> None:
 
 
 @router.get("/", response_model=list[SnapshotResponse])
-def list_snapshots(group_id: str, x_user_id: str | None = Header(default=None)):
-    user_id = _require_user(x_user_id)
+def list_snapshots(group_id: str, user_id: str = Depends(get_current_user)):
     _require_role(group_id, user_id, "owner", "editor", "viewer")
     return [_to_response(r) for r in db.get_snapshots(group_id)]
 
 
 @router.post("/", response_model=SnapshotResponse, status_code=201)
-def create_snapshot(group_id: str, body: SnapshotCreate, x_user_id: str | None = Header(default=None)):
-    user_id = _require_user(x_user_id)
+def create_snapshot(group_id: str, body: SnapshotCreate, user_id: str = Depends(get_current_user)):
     _require_role(group_id, user_id, "owner", "editor")
     metrics = calculate_metrics(body.data)
     row = db.upsert_snapshot(
@@ -41,17 +34,14 @@ def create_snapshot(group_id: str, body: SnapshotCreate, x_user_id: str | None =
 
 
 @router.get("/prefill", response_model=dict[str, SnapshotItem])
-def get_prefill(group_id: str, month: str, x_user_id: str | None = Header(default=None)):
-    """신규 스냅샷 폼 초기화: 직전 스냅샷 데이터를 그대로 반환."""
-    user_id = _require_user(x_user_id)
+def get_prefill(group_id: str, month: str, user_id: str = Depends(get_current_user)):
     _require_role(group_id, user_id, "owner", "editor", "viewer")
     prev = db.get_prev_snapshot_data(group_id, month)
     return prev or {}
 
 
 @router.get("/{snapshot_id}", response_model=SnapshotResponse)
-def get_snapshot(group_id: str, snapshot_id: str, x_user_id: str | None = Header(default=None)):
-    user_id = _require_user(x_user_id)
+def get_snapshot(group_id: str, snapshot_id: str, user_id: str = Depends(get_current_user)):
     _require_role(group_id, user_id, "owner", "editor", "viewer")
     row = db.get_snapshot(snapshot_id)
     if not row or row["group_id"] != group_id:
@@ -62,9 +52,8 @@ def get_snapshot(group_id: str, snapshot_id: str, x_user_id: str | None = Header
 @router.put("/{snapshot_id}", response_model=SnapshotResponse)
 def update_snapshot(
     group_id: str, snapshot_id: str, body: SnapshotCreate,
-    x_user_id: str | None = Header(default=None),
+    user_id: str = Depends(get_current_user),
 ):
-    user_id = _require_user(x_user_id)
     _require_role(group_id, user_id, "owner", "editor")
     existing = db.get_snapshot(snapshot_id)
     if not existing or existing["group_id"] != group_id:
@@ -81,8 +70,7 @@ def update_snapshot(
 
 
 @router.delete("/{snapshot_id}", status_code=204)
-def delete_snapshot(group_id: str, snapshot_id: str, x_user_id: str | None = Header(default=None)):
-    user_id = _require_user(x_user_id)
+def delete_snapshot(group_id: str, snapshot_id: str, user_id: str = Depends(get_current_user)):
     _require_role(group_id, user_id, "owner", "editor")
     existing = db.get_snapshot(snapshot_id)
     if not existing or existing["group_id"] != group_id:

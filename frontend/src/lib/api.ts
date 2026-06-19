@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export interface SnapshotItem {
@@ -36,18 +38,11 @@ export interface Snapshot {
 }
 
 // ── Auth ─────────────────────────────────────────────────────
-// issue #3(로그인) 구현 전까지 localStorage 또는 env 값 사용
-export function getUserId(): string {
-  if (typeof window !== "undefined") {
-    const stored = localStorage.getItem("user_id");
-    if (stored) return stored;
-  }
-  return process.env.NEXT_PUBLIC_DEFAULT_USER_ID ?? "";
-}
 
-function authHeader(): Record<string, string> {
-  const uid = getUserId();
-  return uid ? { "X-User-ID": uid } : {};
+async function authHeader(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 // ── Group ID ─────────────────────────────────────────────────
@@ -56,7 +51,7 @@ let _groupId: string | null = null;
 export async function getDefaultGroupId(): Promise<string> {
   if (_groupId) return _groupId;
   const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
-    headers: authHeader(),
+    headers: await authHeader(),
   });
   if (!res.ok) throw new Error("장부를 불러오지 못했습니다.");
   const groups: { id: string; type: string }[] = await res.json();
@@ -70,7 +65,7 @@ export async function getDefaultGroupId(): Promise<string> {
 export async function fetchSnapshots(): Promise<Snapshot[]> {
   const gid = await getDefaultGroupId();
   const res = await fetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/`, {
-    headers: authHeader(),
+    headers: await authHeader(),
   });
   if (!res.ok) throw new Error("스냅샷 목록을 불러오지 못했습니다.");
   return res.json();
@@ -80,7 +75,7 @@ export async function fetchSnapshot(snapshotId: string): Promise<Snapshot> {
   const gid = await getDefaultGroupId();
   const res = await fetch(
     `${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`,
-    { headers: authHeader() },
+    { headers: await authHeader() },
   );
   if (!res.ok) throw new Error("스냅샷을 불러오지 못했습니다.");
   return res.json();
@@ -90,7 +85,7 @@ export async function fetchPrefill(month: string): Promise<SnapshotData> {
   const gid = await getDefaultGroupId();
   const res = await fetch(
     `${API_URL}/api/v1/asset-groups/${gid}/snapshots/prefill?month=${month}-01`,
-    { headers: authHeader() },
+    { headers: await authHeader() },
   );
   if (!res.ok) return {};
   return res.json();
@@ -103,7 +98,7 @@ export async function saveSnapshot(
   const gid = await getDefaultGroupId();
   const res = await fetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ snapshot_month: `${month}-01`, data }),
   });
   if (!res.ok) throw new Error("저장에 실패했습니다.");
@@ -120,7 +115,7 @@ export async function updateSnapshot(
     `${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`,
     {
       method: "PUT",
-      headers: { "Content-Type": "application/json", ...authHeader() },
+      headers: { "Content-Type": "application/json", ...await authHeader() },
       body: JSON.stringify({ snapshot_month: `${month}-01`, data }),
     },
   );
@@ -132,6 +127,6 @@ export async function deleteSnapshot(snapshotId: string): Promise<void> {
   const gid = await getDefaultGroupId();
   await fetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`, {
     method: "DELETE",
-    headers: authHeader(),
+    headers: await authHeader(),
   });
 }
