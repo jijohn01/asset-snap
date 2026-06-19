@@ -1,40 +1,45 @@
-from app.models.snapshot import SnapshotData, SnapshotMetrics
+from app.models.snapshot import SnapshotData, SnapshotItem, SnapshotMetrics
 
 
-def _sum(section: dict[str, dict[str, int]], *keys: str) -> int:
-    return sum(sum(section.get(k, {}).values()) for k in keys)
+def _sum_categories(data: SnapshotData, *prefixes: str) -> int:
+    return sum(
+        item.amount
+        for item in data.values()
+        if any(item.category == p or item.category.startswith(p + ".") for p in prefixes)
+    )
 
 
 def calculate_metrics(data: SnapshotData) -> SnapshotMetrics:
-    cash_total = _sum(data.assets, "cash_savings")
-    total_assets = _sum(
-        data.assets,
-        "cash_savings", "investments", "insurance_pension", "real_estate", "personal_use",
+    cash_total = _sum_categories(data, "assets.cash_savings")
+    total_assets = _sum_categories(
+        data,
+        "assets.cash_savings", "assets.investments", "assets.insurance_pension",
+        "assets.real_estate", "assets.personal_use",
     )  # ⓐ
 
-    total_liabilities = _sum(data.liabilities, "short_term", "long_term")  # ⓑ
+    total_liabilities = _sum_categories(data, "liabilities.short_term", "liabilities.long_term")  # ⓑ
     net_worth = total_assets - total_liabilities  # ⓔ
 
-    monthly_income = _sum(
-        data.income,
-        "employment", "business", "capital_gains", "interest_dividend",
-        "rental", "pension_insurance", "other",
+    monthly_income = _sum_categories(
+        data,
+        "income.employment", "income.business", "income.capital_gains",
+        "income.interest_dividend", "income.rental", "income.pension_insurance", "income.other",
     )  # ⓒ
 
-    savings_inv = _sum(data.expenses, "savings_investment")   # ②
-    debt_repay = _sum(data.expenses, "debt_repayment")        # ③
-    consumption = _sum(data.expenses, "fixed_consumption", "variable_consumption")  # ⑤
+    savings_inv = _sum_categories(data, "expenses.savings_investment")   # ②
+    debt_repay = _sum_categories(data, "expenses.debt_repayment")        # ③
+    consumption = _sum_categories(data, "expenses.fixed_consumption", "expenses.variable_consumption")  # ⑤
     monthly_expenses = savings_inv + debt_repay + consumption  # ⓓ
     monthly_surplus = monthly_income - monthly_expenses        # ⓡ
 
-    equity_ratio = (net_worth / total_assets * 100) if total_assets > 0 else 0.0          # ⓕ
-    household_balance = (consumption / monthly_income * 100) if monthly_income > 0 else 0.0  # ⓖ
-    emergency_fund = (cash_total / consumption * 100) if consumption > 0 else 0.0            # ⓗ
+    equity_ratio = (net_worth / total_assets * 100) if total_assets > 0 else 0.0
+    household_balance = (consumption / monthly_income * 100) if monthly_income > 0 else 0.0
+    emergency_fund = (cash_total / consumption * 100) if consumption > 0 else 0.0
 
-    annual_surplus = monthly_surplus * 12         # ⓙ
-    annual_savings = savings_inv * 12             # ⓚ
-    annual_asset_increase = annual_surplus + annual_savings  # ⓜ
-    projected_year_end_assets = total_assets + annual_asset_increase  # ⓝ
+    annual_surplus = monthly_surplus * 12
+    annual_savings = savings_inv * 12
+    annual_asset_increase = annual_surplus + annual_savings
+    projected_year_end_assets = total_assets + annual_asset_increase
 
     return SnapshotMetrics(
         total_assets=total_assets,

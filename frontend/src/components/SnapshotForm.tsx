@@ -1,31 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { X } from "lucide-react";
+import { type SnapshotData, type SnapshotItem } from "@/lib/api";
 
-interface UserItem {
-  id: string;
-  category: string;
-  label: string;
-  sort_order: number;
-  memo: string;
-}
-
-export type SnapshotDataPayload = {
-  assets: Record<string, Record<string, number>>;
-  liabilities: Record<string, Record<string, number>>;
-  income: Record<string, Record<string, number>>;
-  expenses: Record<string, Record<string, number>>;
-};
+export type { SnapshotData };
 
 export interface SnapshotFormProps {
   initialMonth: string;
-  initialAmounts?: Record<string, string>;
+  initialData?: SnapshotData;
   saveLabel: string;
   submitting: boolean;
   deleting?: boolean;
   error?: string | null;
-  onSave: (month: string, data: SnapshotDataPayload) => void;
+  onSave: (month: string, data: SnapshotData) => void;
   onDelete?: () => void;
 }
 
@@ -99,19 +87,19 @@ const SUBCATEGORY_LABELS: Record<string, string> = {
   "expenses.variable_consumption": "변동소비",
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-function sumItems(items: UserItem[], amounts: Record<string, string>) {
-  return items.reduce((s, i) => s + (parseInt(amounts[i.id] ?? "0", 10) || 0), 0);
-}
-
 function fmt(val: number) {
   return val.toLocaleString();
 }
 
+function sumByCategory(data: SnapshotData, prefix: string): number {
+  return Object.values(data)
+    .filter((item) => item.category.startsWith(prefix))
+    .reduce((s, item) => s + item.amount, 0);
+}
+
 export default function SnapshotForm({
   initialMonth,
-  initialAmounts = {},
+  initialData = {},
   saveLabel,
   submitting,
   deleting,
@@ -119,122 +107,90 @@ export default function SnapshotForm({
   onSave,
   onDelete,
 }: SnapshotFormProps) {
-  const [items, setItems] = useState<UserItem[]>([]);
-  const [amounts, setAmounts] = useState<Record<string, string>>(initialAmounts);
+  const [data, setData] = useState<SnapshotData>(initialData);
   const [month, setMonth] = useState(initialMonth);
-  const [loadingItems, setLoadingItems] = useState(true);
   const [addingCategory, setAddingCategory] = useState<string | null>(null);
   const [newLabel, setNewLabel] = useState("");
   const newLabelInputRef = useRef<HTMLInputElement>(null);
   const [editingMemoId, setEditingMemoId] = useState<string | null>(null);
   const [memoValue, setMemoValue] = useState("");
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/v1/user-items/`)
-      .then((r) => r.json())
-      .then(setItems)
-      .finally(() => setLoadingItems(false));
-  }, []);
-
-  useEffect(() => {
-    if (addingCategory) newLabelInputRef.current?.focus();
-  }, [addingCategory]);
-
-  function startEditMemo(item: UserItem) {
-    setEditingMemoId(item.id);
-    setMemoValue(item.memo ?? "");
+  function setAmount(itemId: string, raw: string) {
+    const amount = parseInt(raw, 10) || 0;
+    setData((prev) => ({ ...prev, [itemId]: { ...prev[itemId], amount } }));
   }
 
-  async function saveMemo(itemId: string) {
+  function saveMemo(itemId: string) {
     setEditingMemoId(null);
-    await fetch(`${API_URL}/api/v1/user-items/${itemId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ memo: memoValue }),
-    });
-    setItems((prev) =>
-      prev.map((i) => (i.id === itemId ? { ...i, memo: memoValue } : i))
-    );
+    setData((prev) => ({ ...prev, [itemId]: { ...prev[itemId], memo: memoValue } }));
   }
 
-  async function handleDeleteItem(id: string) {
-    await fetch(`${API_URL}/api/v1/user-items/${id}`, { method: "DELETE" });
-    setItems((prev) => prev.filter((i) => i.id !== id));
-    setAmounts((prev) => {
+  function handleDeleteItem(itemId: string) {
+    setData((prev) => {
       const next = { ...prev };
-      delete next[id];
+      delete next[itemId];
       return next;
     });
   }
 
-  async function confirmAddItem() {
+  function confirmAddItem() {
     if (!addingCategory || !newLabel.trim()) {
       setAddingCategory(null);
       setNewLabel("");
       return;
     }
-    const maxOrder = Math.max(
-      0,
-      ...items.filter((i) => i.category === addingCategory).map((i) => i.sort_order),
-    );
-    const res = await fetch(`${API_URL}/api/v1/user-items/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ category: addingCategory, label: newLabel.trim(), sort_order: maxOrder + 1 }),
-    });
-    if (res.ok) {
-      const created: UserItem = await res.json();
-      setItems((prev) => [...prev, created]);
-    }
+    const catItems = Object.values(data).filter((i) => i.category === addingCategory);
+    const maxOrder = catItems.length > 0 ? Math.max(...catItems.map((i) => i.sort_order)) : -1;
+    const newId = crypto.randomUUID();
+    setData((prev) => ({
+      ...prev,
+      [newId]: {
+        label: newLabel.trim(),
+        category: addingCategory,
+        sort_order: maxOrder + 1,
+        memo: "",
+        amount: 0,
+      },
+    }));
     setAddingCategory(null);
     setNewLabel("");
   }
 
   function handleSave() {
-    const data: SnapshotDataPayload = { assets: {}, liabilities: {}, income: {}, expenses: {} };
-    for (const item of items) {
-      const [section, subcategory] = item.category.split(".");
-      const val = parseInt(amounts[item.id] ?? "0", 10);
-      if (!isNaN(val) && val > 0) {
-        const s = section as keyof SnapshotDataPayload;
-        if (!data[s][subcategory]) data[s][subcategory] = {};
-        data[s][subcategory][item.id] = val;
-      }
-    }
-    onSave(month, data);
+    // amount=0인 항목 제외
+    const filtered = Object.fromEntries(
+      Object.entries(data).filter(([, item]) => item.amount > 0),
+    );
+    onSave(month, filtered);
   }
 
-  // 요약 계산
-  const totalAssets = sumItems(items.filter((i) => i.category.startsWith("assets.")), amounts);
-  const totalLiabilities = sumItems(items.filter((i) => i.category.startsWith("liabilities.")), amounts);
+  const totalAssets = sumByCategory(data, "assets.");
+  const totalLiabilities = sumByCategory(data, "liabilities.");
   const netWorth = totalAssets - totalLiabilities;
-  const totalIncome = sumItems(items.filter((i) => i.category.startsWith("income.")), amounts);
-  const totalExpenses = sumItems(items.filter((i) => i.category.startsWith("expenses.")), amounts);
+  const totalIncome = sumByCategory(data, "income.");
+  const totalExpenses = sumByCategory(data, "expenses.");
   const surplus = totalIncome - totalExpenses;
 
   function renderSection(sectionIdx: number) {
     const section = SECTIONS[sectionIdx];
     const colors = SECTION_COLORS[section.id];
-    const sectionItems = items.filter((i) => i.category.startsWith(section.id + "."));
-    const sectionTotal = sumItems(sectionItems, amounts);
+    const sectionTotal = sumByCategory(data, section.id + ".");
 
     return (
       <div key={section.id}>
-        {/* 섹션 헤더 */}
         <div className={`flex items-center justify-between border border-gray-300 px-3 py-2 ${colors.header}`}>
           <span className={`text-sm font-bold ${colors.headerText}`}>{section.label}</span>
           <span className={`text-sm font-semibold ${colors.headerText}`}>{fmt(sectionTotal)} 만원</span>
         </div>
 
         {section.subcategories.map((cat) => {
-          const catItems = items
-            .filter((i) => i.category === cat)
-            .sort((a, b) => a.sort_order - b.sort_order);
-          const catTotal = sumItems(catItems, amounts);
+          const catItems = Object.entries(data)
+            .filter(([, item]) => item.category === cat)
+            .sort(([, a], [, b]) => a.sort_order - b.sort_order);
+          const catTotal = catItems.reduce((s, [, item]) => s + item.amount, 0);
 
           return (
             <div key={cat}>
-              {/* 소분류 헤더 */}
               <div className={`flex items-center justify-between border-x border-b border-gray-200 px-3 py-1.5 ${colors.sub}`}>
                 <span className={`text-xs font-semibold uppercase tracking-wide ${colors.subText}`}>
                   {SUBCATEGORY_LABELS[cat]}
@@ -242,32 +198,29 @@ export default function SnapshotForm({
                 <span className={`text-xs ${colors.subText}`}>{catTotal > 0 ? fmt(catTotal) : "—"}</span>
               </div>
 
-              {/* 항목 행 */}
-              {catItems.map((item, idx) => (
+              {catItems.map(([itemId, item], idx) => (
                 <div
-                  key={item.id}
-                  className={`flex items-center border-x border-b border-gray-200 ${
-                    idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                  }`}
+                  key={itemId}
+                  className={`flex items-center border-x border-b border-gray-200 ${idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}`}
                 >
                   <button
                     type="button"
-                    onClick={() => handleDeleteItem(item.id)}
+                    onClick={() => handleDeleteItem(itemId)}
                     className="shrink-0 self-start px-2 pt-2.5 text-gray-300 hover:text-red-400"
                   >
                     <X size={12} />
                   </button>
                   <div className="flex flex-1 flex-col py-1.5 pr-2">
                     <span className="text-sm text-gray-700">{item.label}</span>
-                    {editingMemoId === item.id ? (
+                    {editingMemoId === itemId ? (
                       <input
                         type="text"
                         autoFocus
                         value={memoValue}
                         onChange={(e) => setMemoValue(e.target.value)}
-                        onBlur={() => saveMemo(item.id)}
+                        onBlur={() => saveMemo(itemId)}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") saveMemo(item.id);
+                          if (e.key === "Enter") saveMemo(itemId);
                           if (e.key === "Escape") setEditingMemoId(null);
                         }}
                         placeholder="메모 입력"
@@ -276,7 +229,7 @@ export default function SnapshotForm({
                     ) : (
                       <button
                         type="button"
-                        onClick={() => startEditMemo(item)}
+                        onClick={() => { setEditingMemoId(itemId); setMemoValue(item.memo ?? ""); }}
                         className="mt-0.5 text-left text-xs text-gray-400 hover:text-gray-600"
                       >
                         {item.memo ? item.memo : <span className="text-gray-300">+ 메모</span>}
@@ -287,10 +240,8 @@ export default function SnapshotForm({
                     <input
                       type="number"
                       min={0}
-                      value={amounts[item.id] ?? ""}
-                      onChange={(e) =>
-                        setAmounts((prev) => ({ ...prev, [item.id]: e.target.value }))
-                      }
+                      value={item.amount || ""}
+                      onChange={(e) => setAmount(itemId, e.target.value)}
                       placeholder="0"
                       className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-primary-50 focus:outline-none"
                     />
@@ -299,7 +250,6 @@ export default function SnapshotForm({
                 </div>
               ))}
 
-              {/* 항목 추가 행 */}
               {addingCategory === cat ? (
                 <div className="flex items-center gap-2 border-x border-b border-primary-300 bg-primary-50 px-3 py-1.5">
                   <input
@@ -313,6 +263,7 @@ export default function SnapshotForm({
                     }}
                     placeholder="항목 이름"
                     className="flex-1 bg-transparent text-sm focus:outline-none"
+                    autoFocus
                   />
                   <button onClick={confirmAddItem} className="text-xs font-medium text-primary-600">확인</button>
                   <button onClick={() => { setAddingCategory(null); setNewLabel(""); }} className="text-xs text-gray-400">취소</button>
@@ -335,7 +286,6 @@ export default function SnapshotForm({
 
   return (
     <div>
-      {/* 기준 월 */}
       <div className="mb-5 flex items-center gap-3">
         <label className="text-sm font-medium text-gray-700">기준 월</label>
         <input
@@ -346,64 +296,54 @@ export default function SnapshotForm({
         />
       </div>
 
-      {loadingItems ? (
-        <p className="text-sm text-gray-400">불러오는 중...</p>
-      ) : (
-        <>
-          {/* 2열 그리드 */}
-          <div className="grid grid-cols-2 gap-5">
-            {/* 왼쪽: 자산 + 부채 */}
-            <div className="space-y-4">
-              {renderSection(0)}
-              {renderSection(1)}
-              <div className="flex items-center justify-between rounded bg-primary-50 px-3 py-2.5 text-sm font-semibold">
-                <span className="text-primary-700">순자산</span>
-                <span className={netWorth >= 0 ? "text-primary-700" : "text-negative"}>
-                  {fmt(netWorth)} 만원
-                </span>
-              </div>
-            </div>
-
-            {/* 오른쪽: 소득 + 지출 */}
-            <div className="space-y-4">
-              {renderSection(2)}
-              {renderSection(3)}
-              <div className="flex items-center justify-between rounded bg-emerald-50 px-3 py-2.5 text-sm font-semibold">
-                <span className="text-positive">월잉여금</span>
-                <span className={surplus >= 0 ? "text-positive" : "text-negative"}>
-                  {fmt(surplus)} 만원
-                </span>
-              </div>
-            </div>
+      <div className="grid grid-cols-2 gap-5">
+        <div className="space-y-4">
+          {renderSection(0)}
+          {renderSection(1)}
+          <div className="flex items-center justify-between rounded bg-primary-50 px-3 py-2.5 text-sm font-semibold">
+            <span className="text-primary-700">순자산</span>
+            <span className={netWorth >= 0 ? "text-primary-700" : "text-negative"}>
+              {fmt(netWorth)} 만원
+            </span>
           </div>
+        </div>
 
-          {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
-
-          {/* 액션 버튼 */}
-          <div className="mt-6 flex items-center justify-between">
-            {onDelete ? (
-              <button
-                type="button"
-                onClick={onDelete}
-                disabled={deleting}
-                className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
-              >
-                {deleting ? "삭제 중..." : "스냅샷 삭제"}
-              </button>
-            ) : (
-              <div />
-            )}
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={submitting}
-              className="rounded-lg bg-primary-500 px-5 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
-            >
-              {submitting ? "저장 중..." : saveLabel}
-            </button>
+        <div className="space-y-4">
+          {renderSection(2)}
+          {renderSection(3)}
+          <div className="flex items-center justify-between rounded bg-emerald-50 px-3 py-2.5 text-sm font-semibold">
+            <span className="text-positive">월잉여금</span>
+            <span className={surplus >= 0 ? "text-positive" : "text-negative"}>
+              {fmt(surplus)} 만원
+            </span>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+
+      {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+
+      <div className="mt-6 flex items-center justify-between">
+        {onDelete ? (
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={deleting}
+            className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
+          >
+            {deleting ? "삭제 중..." : "스냅샷 삭제"}
+          </button>
+        ) : (
+          <div />
+        )}
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={submitting}
+          className="rounded-lg bg-primary-500 px-5 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
+        >
+          {submitting ? "저장 중..." : saveLabel}
+        </button>
+      </div>
     </div>
   );
 }

@@ -15,22 +15,7 @@ import {
   Label,
 } from "recharts";
 import { colors } from "@/lib/colors";
-
-interface SnapshotMetrics {
-  net_worth: number;
-  equity_ratio: number;
-  monthly_income: number;
-  monthly_surplus: number;
-}
-
-interface Snapshot {
-  id: string;
-  snapshot_month: string;
-  data: { assets: Record<string, Record<string, number>> };
-  metrics: SnapshotMetrics;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import { fetchSnapshots, type Snapshot, type SnapshotData } from "@/lib/api";
 
 const ASSET_CATEGORIES = [
   { key: "cash_savings",      label: "현금/저축",  color: colors.primary[500] },
@@ -50,14 +35,16 @@ type ChartPoint = {
   personal_use: number;
 };
 
+function sumCategory(data: SnapshotData, category: string): number {
+  return Object.values(data)
+    .filter((item) => item.category === category)
+    .reduce((s, item) => s + item.amount, 0);
+}
+
 function addOneMonth(ym: string): string {
   const [y, m] = ym.split("-").map(Number);
   const d = new Date(y, m, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function sumItems(items: Record<string, number>): number {
-  return Object.values(items).reduce((s, v) => s + v, 0);
 }
 
 function buildChartData(snapshots: Snapshot[]): ChartPoint[] {
@@ -77,11 +64,11 @@ function buildChartData(snapshots: Snapshot[]): ChartPoint[] {
     const snap = snapByMonth[cur];
     if (snap) {
       const raw = {
-        cash_savings: sumItems(snap.data.assets.cash_savings ?? {}),
-        investments: sumItems(snap.data.assets.investments ?? {}),
-        insurance_pension: sumItems(snap.data.assets.insurance_pension ?? {}),
-        real_estate: sumItems(snap.data.assets.real_estate ?? {}),
-        personal_use: sumItems(snap.data.assets.personal_use ?? {}),
+        cash_savings:      sumCategory(snap.data, "assets.cash_savings"),
+        investments:       sumCategory(snap.data, "assets.investments"),
+        insurance_pension: sumCategory(snap.data, "assets.insurance_pension"),
+        real_estate:       sumCategory(snap.data, "assets.real_estate"),
+        personal_use:      sumCategory(snap.data, "assets.personal_use"),
       };
       const totalAssets = Object.values(raw).reduce((s, v) => s + v, 0);
       const scale = totalAssets > 0 ? snap.metrics.net_worth / totalAssets : 1;
@@ -118,9 +105,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/v1/snapshots/`)
-      .then((r) => r.json())
-      .then((data: Snapshot[]) =>
+    fetchSnapshots()
+      .then((data) =>
         setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
       )
       .finally(() => setLoading(false));
@@ -145,7 +131,7 @@ export default function DashboardPage() {
     ? ASSET_CATEGORIES.map((cat) => ({
         name: cat.label,
         color: cat.color,
-        value: sumItems(latest.data.assets[cat.key] ?? {}),
+        value: sumCategory(latest.data, `assets.${cat.key}`),
       })).filter((d) => d.value > 0)
     : [];
 
@@ -168,7 +154,6 @@ export default function DashboardPage() {
         {latest ? `${latest.snapshot_month.slice(0, 7)} 스냅샷 기준` : "최신 스냅샷 기준"} 자산 현황
       </p>
 
-      {/* 상단 카드 */}
       <div className="mt-6 grid grid-cols-4 gap-4">
         {!hasData
           ? ["순자산", "자기자본비율", "월소득", "월잉여금"].map((label) => (
@@ -196,9 +181,7 @@ export default function DashboardPage() {
             })}
       </div>
 
-      {/* 차트 영역 */}
       <div className="mt-4 grid grid-cols-3 gap-4">
-        {/* 월별 자산 유형 스택 막대그래프 */}
         <div className="col-span-2 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-gray-500">월별 순자산 구성</p>
           {hasData ? (
@@ -244,7 +227,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* 자산 구성 도넛 차트 */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-gray-500">자산 구성</p>
           {pieData.length > 0 ? (

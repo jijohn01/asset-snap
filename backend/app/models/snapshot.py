@@ -2,32 +2,16 @@ from pydantic import BaseModel
 from datetime import date
 
 
-class SnapshotData(BaseModel):
-    assets: dict[str, dict[str, int]] = {}
-    liabilities: dict[str, dict[str, int]] = {}
-    income: dict[str, dict[str, int]] = {}
-    expenses: dict[str, dict[str, int]] = {}
-
-
-class UserItem(BaseModel):
-    id: str
-    category: str
+class SnapshotItem(BaseModel):
     label: str
+    category: str        # e.g. "assets.cash_savings"
     sort_order: int = 0
     memo: str = ""
+    amount: int = 0
 
 
-class UserItemCreate(BaseModel):
-    category: str
-    label: str
-    sort_order: int = 0
-    memo: str = ""
-
-
-class UserItemUpdate(BaseModel):
-    label: str | None = None
-    sort_order: int | None = None
-    memo: str | None = None
+# JSONB flat structure: { "<item-uuid>": SnapshotItem }
+SnapshotData = dict[str, SnapshotItem]
 
 
 class SnapshotCreate(BaseModel):
@@ -42,17 +26,18 @@ class SnapshotMetrics(BaseModel):
     monthly_income: int
     monthly_expenses: int
     monthly_surplus: int
-    equity_ratio: float        # ⓕ 자기자본비율
-    household_balance: float   # ⓖ 가계수지지표
-    emergency_fund: float      # ⓗ 비상예비자금지표
-    annual_surplus: int        # ⓙ 연간 잉여자금
-    annual_savings: int        # ⓚ 연간 저축/투자액
-    annual_asset_increase: int # ⓜ 연간 자산증가
-    projected_year_end_assets: int  # ⓝ 연말 예상 자산
+    equity_ratio: float
+    household_balance: float
+    emergency_fund: float
+    annual_surplus: int
+    annual_savings: int
+    annual_asset_increase: int
+    projected_year_end_assets: int
 
 
 class SnapshotResponse(BaseModel):
     id: str
+    group_id: str
     snapshot_month: str
     data: SnapshotData
     metrics: SnapshotMetrics

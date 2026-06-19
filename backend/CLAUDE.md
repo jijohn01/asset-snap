@@ -5,8 +5,7 @@
 - **프레임워크:** FastAPI + uvicorn
 - **패키지 매니저:** `uv` — 패키지 추가는 `uv add <패키지>`, 의존성 설치는 `uv sync`
 - **설정:** `pydantic-settings` — `backend/.env` 파일에서 읽음 (`.env.example` 복사해서 생성)
-- **DB (현재):** `local_store.py` (JSON 파일, `backend/data/`) — 현재 활성 데이터 레이어
-- **DB (예정):** Supabase — `db/supabase.py`에 클라이언트 존재, 아직 연동 전
+- **DB:** Supabase (PostgreSQL) — `db/supabase.py` (CRUD 함수), `local_store.py` 미사용
 
 ## 개발 명령어
 
@@ -21,14 +20,23 @@
 ```
 app/
   main.py              # FastAPI 앱, CORS 설정, /api에 라우터 마운트
-  config.py            # 설정값 (allowed_origins만 사용, Supabase 연동 전)
+  config.py            # 설정값 (Supabase URL/key 포함)
   api/v1/
     router.py          # /api/v1의 모든 엔드포인트 라우터 집계
-    endpoints/         # 리소스별 파일 (snapshots.py, user_items.py)
-  models/              # Pydantic 요청/응답 모델
-  services/            # 비즈니스 로직 (e.g. calculations.py)
-  db/                  # local_store.py (활성), supabase.py (향후 연동)
-data/                  # JSON 개발 데이터: snapshots.json, user_items.json
+    endpoints/
+      asset_groups.py  # 장부 CRUD + 멤버 관리
+      snapshots.py     # 스냅샷 CRUD (장부 하위 리소스)
+  models/
+    snapshot.py        # SnapshotItem, SnapshotCreate, SnapshotResponse
+    asset_group.py     # AssetGroupCreate/Response, MemberResponse 등
+  services/
+    calculations.py    # 재무 지표 계산 (JSONB flat 구조 기반)
+  db/
+    supabase.py        # CRUD 함수 (groups, members, snapshots)
+scripts/
+  migrate_json.py      # JSON 파일 → Supabase 1회성 마이그레이션
+supabase/
+  migrations/001_init.sql  # 4개 테이블 DDL + RLS + trigger + VIEW
 ```
 
 새 엔드포인트 추가: `endpoints/`에 파일 생성 후 `api/v1/router.py`에 등록.
@@ -36,25 +44,55 @@ data/                  # JSON 개발 데이터: snapshots.json, user_items.json
 ## 엔드포인트 목록
 
 ```
-GET    /api/v1/snapshots/          목록 (최신순)
-POST   /api/v1/snapshots/          생성 (같은 snapshot_month면 upsert)
-GET    /api/v1/snapshots/{id}      단건 조회
-PUT    /api/v1/snapshots/{id}      수정
-DELETE /api/v1/snapshots/{id}      삭제
+GET    /api/v1/asset-groups/                              내 장부 목록
+POST   /api/v1/asset-groups/                              장부 생성
+GET    /api/v1/asset-groups/{group_id}                    장부 상세
+PUT    /api/v1/asset-groups/{group_id}                    장부 수정 (owner)
+DELETE /api/v1/asset-groups/{group_id}                    장부 삭제 (owner)
 
-GET    /api/v1/user-items/         항목 목록
-POST   /api/v1/user-items/         항목 생성
-PUT    /api/v1/user-items/{id}     항목 수정
-DELETE /api/v1/user-items/{id}     항목 삭제
+GET    /api/v1/asset-groups/{group_id}/members            멤버 목록
+POST   /api/v1/asset-groups/{group_id}/members            멤버 초대 (owner)
+PUT    /api/v1/asset-groups/{group_id}/members/{user_id}  역할 변경 (owner)
+DELETE /api/v1/asset-groups/{group_id}/members/{user_id}  멤버 제거 (owner)
 
-GET    /health                     헬스 체크
+GET    /api/v1/asset-groups/{group_id}/snapshots/         스냅샷 목록 (최신순)
+POST   /api/v1/asset-groups/{group_id}/snapshots/         스냅샷 생성/수정 (upsert)
+GET    /api/v1/asset-groups/{group_id}/snapshots/prefill  직전 스냅샷 초기값 (amount=0)
+GET    /api/v1/asset-groups/{group_id}/snapshots/{id}     스냅샷 단건
+PUT    /api/v1/asset-groups/{group_id}/snapshots/{id}     스냅샷 수정
+DELETE /api/v1/asset-groups/{group_id}/snapshots/{id}     스냅샷 삭제
+
+GET    /health                                            헬스 체크
 ```
 
-**주의:** `POST /snapshots/`는 동일 `snapshot_month`가 이미 존재하면 덮어씀 (upsert). ID가 아닌 월 기준.
+**주의:** `POST /snapshots/`는 동일 `snapshot_month`가 이미 존재하면 upsert. ID가 아닌 월 기준.
 
-**주의:** `PUT /user-items/{id}` 는 `memo=""`(빈 문자열)로 메모 초기화 가능. `label`/`sort_order`는 `None`이면 무시하지만 `memo`는 예외 처리됨 (`user_items.py` 필터 참고).
+**인증 (임시):** `X-User-ID: <uuid>` 헤더로 유저 식별. issue #3(로그인)에서 Supabase Auth JWT로 교체 예정.
 
 ## 환경 변수
 
-현재 필수 변수 없음 (local JSON mock 사용 중).
-Supabase 연동 시 `backend/.env.example` 참고.
+`backend/.env.example` 참고:
+```
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_ANON_KEY=
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+## 데이터 모델 (JSONB)
+
+```json
+{
+  "<item-uuid>": {
+    "label":      "CMA",
+    "category":   "assets.cash_savings",
+    "sort_order": 0,
+    "memo":       "",
+    "amount":     4097
+  }
+}
+```
+
+- category 형식: `{section}.{subcategory}` (e.g. `assets.cash_savings`, `expenses.fixed_consumption`)
+- item_id는 앱 레이어에서 생성한 UUID, 스냅샷 간 복사해 연속성 유지
+- 해당 달에 없는 항목은 키 자체가 없음
