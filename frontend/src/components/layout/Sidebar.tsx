@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarDays, Settings } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, CalendarDays, Settings, LogOut } from "lucide-react";
 import { clsx } from "clsx";
+import { supabase } from "@/lib/supabase";
 
 const NAV = [
   { href: "/", label: "대시보드", icon: LayoutDashboard },
@@ -13,6 +14,13 @@ const NAV = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="flex w-60 flex-col bg-[#0A0A0A]">
@@ -39,8 +47,14 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-[#1A1A1A] px-6 py-4">
-        <p className="text-xs text-[#666666]">2026년 6월</p>
+      <div className="border-t border-[#1A1A1A] px-3 py-3">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-[#888888] transition-colors hover:bg-[#1F1F1F] hover:text-white"
+        >
+          <LogOut size={16} />
+          로그아웃
+        </button>
       </div>
     </aside>
   );
