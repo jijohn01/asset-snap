@@ -42,13 +42,11 @@ def create_snapshot(group_id: str, body: SnapshotCreate, x_user_id: str | None =
 
 @router.get("/prefill", response_model=dict[str, SnapshotItem])
 def get_prefill(group_id: str, month: str, x_user_id: str | None = Header(default=None)):
-    """신규 스냅샷 폼 초기화: 직전 스냅샷 데이터를 amount=0으로 반환."""
+    """신규 스냅샷 폼 초기화: 직전 스냅샷 데이터를 그대로 반환."""
     user_id = _require_user(x_user_id)
     _require_role(group_id, user_id, "owner", "editor", "viewer")
     prev = db.get_prev_snapshot_data(group_id, month)
-    if not prev:
-        return {}
-    return {item_id: {**meta, "amount": 0} for item_id, meta in prev.items()}
+    return prev or {}
 
 
 @router.get("/{snapshot_id}", response_model=SnapshotResponse)
