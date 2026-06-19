@@ -23,6 +23,7 @@ app/
   config.py            # 설정값 (Supabase URL/key 포함)
   api/v1/
     router.py          # /api/v1의 모든 엔드포인트 라우터 집계
+    deps.py            # JWT 검증 (get_current_user dependency)
     endpoints/
       asset_groups.py  # 장부 CRUD + 멤버 관리
       snapshots.py     # 스냅샷 CRUD (장부 하위 리소스)
@@ -67,7 +68,9 @@ GET    /health                                            헬스 체크
 
 **주의:** `POST /snapshots/`는 동일 `snapshot_month`가 이미 존재하면 upsert. ID가 아닌 월 기준.
 
-**인증 (임시):** `X-User-ID: <uuid>` 헤더로 유저 식별. issue #3(로그인)에서 Supabase Auth JWT로 교체 예정.
+**인증:** `Authorization: Bearer <JWT>` 헤더. `api/deps.py`의 `get_current_user`가 Supabase ES256 공개키로 검증 후 `sub` (user UUID) 반환.
+- Supabase 신규 프로젝트는 HS256이 아닌 **ES256** 사용 — JWKS 공개키로 검증 (`PyJWT[crypto]` 필요)
+- JWKS URL: `https://<project>.supabase.co/auth/v1/.well-known/jwks.json`
 
 ## 환경 변수
 
@@ -76,8 +79,12 @@ GET    /health                                            헬스 체크
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_ANON_KEY=
-ALLOWED_ORIGINS=http://localhost:3000
+ALLOWED_ORIGINS=["http://localhost:3000"]
 ```
+
+**⚠️ Gotcha:** `ALLOWED_ORIGINS`는 반드시 **JSON 배열 문자열** 형식이어야 함 (pydantic-settings v2.6.1 이상). 쉼표 구분 문자열 불가.
+
+**⚠️ Gotcha:** `.env` 파일은 gitignored라 워크트리 생성 시 자동 복사 안 됨 — 수동으로 복사 후 `uv sync` 실행.
 
 ## 데이터 모델 (JSONB)
 

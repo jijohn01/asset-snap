@@ -84,14 +84,35 @@ Always scope commands to the correct subdirectory (e.g., `npm ...` from `fronten
 
 Python 환경 첫 설정: `backend/` 에서 `uv sync`
 
+### 필수 환경변수
+
+`frontend/.env.local`:
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+```
+
+`backend/.env`:
+```
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_ANON_KEY=
+ALLOWED_ORIGINS=["http://localhost:3000"]   # JSON 배열 형식 필수
+```
+
 ## Pages & Routes
 
 | Route | Description |
 |-------|-------------|
+| `/login` | 로그인 (Supabase Auth 이메일+비밀번호) |
+| `/signup` | 회원가입 |
 | `/` | 대시보드 — 최신 스냅샷 기준 순자산 카드 + 트렌드 차트 |
 | `/history` | 월별 이력 목록 — 스냅샷 보기/수정/삭제, 전월 대비 순자산 증감(▲▼) 표시 |
 | `/snapshot/new` | 새 스냅샷 입력 — 엑셀 스타일 2열 그리드, 직전 스냅샷 금액으로 미리채움 |
 | `/snapshot/[id]` | 기존 스냅샷 수정/삭제 |
+
+`/login`, `/signup` 외 모든 라우트는 `middleware.ts`가 미인증 시 `/login`으로 리다이렉트.
 
 ## Data Model (핵심)
 
