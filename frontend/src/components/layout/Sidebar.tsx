@@ -15,10 +15,10 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-60 flex-col bg-slate-900">
-      <div className="border-b border-slate-800 px-6 py-5">
+    <aside className="flex w-60 flex-col bg-[#0A0A0A]">
+      <div className="border-b border-[#1A1A1A] px-6 py-5">
         <h1 className="text-lg font-semibold text-white">Asset Snap</h1>
-        <p className="mt-0.5 text-xs text-slate-400">자산 네비게이터</p>
+        <p className="mt-0.5 text-xs text-[#888888]">자산 네비게이터</p>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
@@ -30,7 +30,7 @@ export default function Sidebar() {
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
               pathname === href
                 ? "bg-primary-500 text-white"
-                : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                : "text-[#888888] hover:bg-[#1F1F1F] hover:text-white"
             )}
           >
             <Icon size={16} />
@@ -39,8 +39,8 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-slate-800 px-6 py-4">
-        <p className="text-xs text-slate-500">2026년 6월</p>
+      <div className="border-t border-[#1A1A1A] px-6 py-4">
+        <p className="text-xs text-[#666666]">2026년 6월</p>
       </div>
     </aside>
   );

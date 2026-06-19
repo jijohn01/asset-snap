@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 @import "tailwindcss";
 
 @theme {
@@ -8,4 +9,16 @@
   --color-primary-700: #1559C7;
   --color-positive: #00B493;
   --color-negative: #F04452;
+  --color-surface: #F5F5F7;
+  --color-border: #E4E4E7;
+  --color-ink: #111111;
+  --color-ink-sub: #6B6B6B;
+  --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
 }

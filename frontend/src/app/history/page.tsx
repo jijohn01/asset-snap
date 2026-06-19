@@ -51,8 +51,8 @@ export default function HistoryPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">월별 이력</h2>
-          <p className="mt-1 text-sm text-gray-500">스냅샷 타임라인</p>
+          <h2 className="text-2xl font-bold text-[#111111]">월별 이력</h2>
+          <p className="mt-1 text-sm text-[#6B6B6B]">스냅샷 타임라인</p>
         </div>
         <Link
           href="/snapshot/new"
@@ -65,8 +65,8 @@ export default function HistoryPage() {
       <div className="mt-6 space-y-3">
         {loading && <p className="text-sm text-gray-400">불러오는 중...</p>}
         {!loading && snapshots.length === 0 && (
-          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <p className="text-sm text-gray-400">스냅샷이 없습니다.</p>
+          <div className="rounded-xl border border-[#E4E4E7] bg-white p-8 text-center">
+            <p className="text-sm text-[#9B9B9B]">스냅샷이 없습니다.</p>
             <Link href="/snapshot/new" className="mt-2 inline-block text-sm text-primary-500 hover:underline">
               첫 스냅샷 입력하기
             </Link>
@@ -77,11 +77,11 @@ export default function HistoryPage() {
           return (
             <div
               key={s.id}
-              className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+              className="flex items-center justify-between rounded-xl border border-[#E4E4E7] bg-white p-5 transition-colors hover:bg-[#FAFAFA]"
             >
               <div>
-                <p className="text-sm font-semibold text-gray-700">{fmtMonth(s.snapshot_month)}</p>
-                <div className="mt-1 flex gap-4 text-xs text-gray-400">
+                <p className="text-sm font-semibold text-[#111111]">{fmtMonth(s.snapshot_month)}</p>
+                <div className="mt-1 flex gap-4 text-xs text-[#9B9B9B]">
                   <span>순자산 {fmt(s.metrics.net_worth)}</span>
                   {diffInfo && (
                     diffInfo.diff === 0 ? (
@@ -101,7 +101,7 @@ export default function HistoryPage() {
               <div className="flex items-center gap-2">
                 <Link
                   href={`/snapshot/${s.id}`}
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50"
+                  className="flex items-center gap-1.5 rounded-lg border border-[#E4E4E7] px-3 py-1.5 text-xs text-[#6B6B6B] hover:bg-[#F5F5F7]"
                 >
                   <Pencil size={13} />
                   보기 / 수정
