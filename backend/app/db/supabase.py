@@ -169,6 +169,8 @@ def update_snapshot_by_id(snapshot_id: str, snapshot_month: str, data: dict, met
         .eq("id", snapshot_id)
         .execute()
     )
+    if not res.data:
+        raise ValueError(f"snapshot {snapshot_id} not found after update")
     return res.data[0]
 
 

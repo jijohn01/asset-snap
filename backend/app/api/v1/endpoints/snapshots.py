@@ -59,12 +59,17 @@ def update_snapshot(
     if not existing or existing["group_id"] != group_id:
         raise HTTPException(status_code=404, detail="스냅샷 없음")
     metrics = calculate_metrics(body.data)
-    row = db.update_snapshot_by_id(
-        snapshot_id=snapshot_id,
-        snapshot_month=body.snapshot_month.isoformat(),
-        data={item_id: item.model_dump() for item_id, item in body.data.items()},
-        metrics=metrics.model_dump(),
-    )
+    try:
+        row = db.update_snapshot_by_id(
+            snapshot_id=snapshot_id,
+            snapshot_month=body.snapshot_month.isoformat(),
+            data={item_id: item.model_dump() for item_id, item in body.data.items()},
+            metrics=metrics.model_dump(),
+        )
+    except Exception as e:
+        if "23505" in str(e):
+            raise HTTPException(status_code=409, detail="해당 월의 스냅샷이 이미 존재합니다.")
+        raise
     return _to_response(row)
 
 
