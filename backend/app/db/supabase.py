@@ -161,6 +161,17 @@ def upsert_snapshot(group_id: str, snapshot_month: str, data: dict, metrics: dic
     return res.data[0]
 
 
+def update_snapshot_by_id(snapshot_id: str, snapshot_month: str, data: dict, metrics: dict) -> dict:
+    db = get_supabase()
+    res = (
+        db.table("snapshots")
+        .update({"snapshot_month": snapshot_month, "data": data, **metrics})
+        .eq("id", snapshot_id)
+        .execute()
+    )
+    return res.data[0]
+
+
 def delete_snapshot(snapshot_id: str) -> None:
     db = get_supabase()
     db.table("snapshots").delete().eq("id", snapshot_id).execute()

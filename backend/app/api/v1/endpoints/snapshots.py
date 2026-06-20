@@ -59,12 +59,11 @@ def update_snapshot(
     if not existing or existing["group_id"] != group_id:
         raise HTTPException(status_code=404, detail="스냅샷 없음")
     metrics = calculate_metrics(body.data)
-    row = db.upsert_snapshot(
-        group_id=group_id,
+    row = db.update_snapshot_by_id(
+        snapshot_id=snapshot_id,
         snapshot_month=body.snapshot_month.isoformat(),
         data={item_id: item.model_dump() for item_id, item in body.data.items()},
         metrics=metrics.model_dump(),
-        created_by=user_id,
     )
     return _to_response(row)
 
