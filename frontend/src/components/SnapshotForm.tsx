@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { X } from "lucide-react";
+import { GripVertical, X } from "lucide-react";
 import { type SnapshotData, type SnapshotItem } from "@/lib/api";
 
 export type { SnapshotData };
@@ -114,6 +114,9 @@ export default function SnapshotForm({
   const newLabelInputRef = useRef<HTMLInputElement>(null);
   const [editingMemoId, setEditingMemoId] = useState<string | null>(null);
   const [memoValue, setMemoValue] = useState("");
+  const [dragItemId, setDragItemId] = useState<string | null>(null);
+  const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+  const [dragOverCat, setDragOverCat] = useState<string | null>(null);
 
   function setAmount(itemId: string, raw: string) {
     const amount = parseInt(raw, 10) || 0;
@@ -123,6 +126,60 @@ export default function SnapshotForm({
   function saveMemo(itemId: string) {
     setEditingMemoId(null);
     setData((prev) => ({ ...prev, [itemId]: { ...prev[itemId], memo: memoValue } }));
+  }
+
+  function clearDragState() {
+    setDragItemId(null);
+    setDragOverItemId(null);
+    setDragOverCat(null);
+  }
+
+  function handleDrop(draggedId: string, targetId: string) {
+    if (draggedId === targetId) { clearDragState(); return; }
+    setData((prev) => {
+      const dragged = prev[draggedId];
+      const target = prev[targetId];
+      if (!dragged || !target) return prev;
+      const newCat = target.category;
+      const oldCat = dragged.category;
+      const without = { ...prev };
+      delete without[draggedId];
+      if (oldCat !== newCat) {
+        Object.entries(without)
+          .filter(([, item]) => item.category === oldCat)
+          .sort(([, a], [, b]) => a.sort_order - b.sort_order)
+          .forEach(([id], i) => { without[id] = { ...without[id], sort_order: i }; });
+      }
+      const newCatItems = Object.entries(without)
+        .filter(([, item]) => item.category === newCat)
+        .sort(([, a], [, b]) => a.sort_order - b.sort_order);
+      const targetIdx = newCatItems.findIndex(([id]) => id === targetId);
+      newCatItems.splice(targetIdx, 0, [draggedId, { ...dragged, category: newCat }]);
+      const updated = { ...without };
+      newCatItems.forEach(([id, item], i) => { updated[id] = { ...item, sort_order: i }; });
+      return updated;
+    });
+    clearDragState();
+  }
+
+  function handleDropOnCat(draggedId: string, cat: string) {
+    setData((prev) => {
+      const dragged = prev[draggedId];
+      if (!dragged) return prev;
+      const oldCat = dragged.category;
+      const without = { ...prev };
+      delete without[draggedId];
+      if (oldCat !== cat) {
+        Object.entries(without)
+          .filter(([, item]) => item.category === oldCat)
+          .sort(([, a], [, b]) => a.sort_order - b.sort_order)
+          .forEach(([id], i) => { without[id] = { ...without[id], sort_order: i }; });
+      }
+      const catItems = Object.values(without).filter((item) => item.category === cat);
+      const maxOrder = catItems.length > 0 ? Math.max(...catItems.map((item) => item.sort_order)) : -1;
+      return { ...without, [draggedId]: { ...dragged, category: cat, sort_order: maxOrder + 1 } };
+    });
+    clearDragState();
   }
 
   function handleDeleteItem(itemId: string) {
@@ -191,7 +248,12 @@ export default function SnapshotForm({
 
           return (
             <div key={cat}>
-              <div className={`flex items-center justify-between border-x border-b border-[#E4E4E7] px-3 py-1.5 ${colors.sub}`}>
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragOverCat(cat); setDragOverItemId(null); }}
+                onDrop={(e) => { e.preventDefault(); dragItemId && handleDropOnCat(dragItemId, cat); }}
+                onDragLeave={() => setDragOverCat(null)}
+                className={`flex items-center justify-between border-x border-b border-[#E4E4E7] px-3 py-1.5 ${colors.sub} ${dragOverCat === cat && dragItemId ? "ring-2 ring-inset ring-primary-400" : ""}`}
+              >
                 <span className={`text-xs font-semibold uppercase tracking-wide ${colors.subText}`}>
                   {SUBCATEGORY_LABELS[cat]}
                 </span>
@@ -201,12 +263,22 @@ export default function SnapshotForm({
               {catItems.map(([itemId, item], idx) => (
                 <div
                   key={itemId}
-                  className={`flex items-center border-x border-b border-[#E4E4E7] ${idx % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"}`}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverItemId(itemId); setDragOverCat(null); }}
+                  onDrop={(e) => { e.preventDefault(); dragItemId && handleDrop(dragItemId, itemId); }}
+                  className={`flex items-center border-x border-b border-[#E4E4E7] ${idx % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"} ${dragOverItemId === itemId && dragItemId !== itemId ? "border-t-2 border-t-primary-400" : ""}`}
                 >
+                  <div
+                    draggable
+                    onDragStart={(e) => { setDragItemId(itemId); e.dataTransfer.effectAllowed = "move"; }}
+                    onDragEnd={clearDragState}
+                    className="shrink-0 cursor-grab px-1 py-2.5 text-gray-300 hover:text-gray-400 active:cursor-grabbing"
+                  >
+                    <GripVertical size={12} />
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleDeleteItem(itemId)}
-                    className="shrink-0 self-start px-2 pt-2.5 text-gray-300 hover:text-red-400"
+                    className="shrink-0 self-start px-1 pt-2.5 text-gray-300 hover:text-red-400"
                   >
                     <X size={12} />
                   </button>
