@@ -176,9 +176,12 @@ export default function SettingsPage() {
             return (
               <div key={group.id} className="rounded-xl border border-[#E4E4E7] bg-white overflow-hidden">
                 {/* Card header */}
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleExpandGroup(group)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-[#FAFAFA] transition-colors"
+                  onKeyDown={(e) => e.key === "Enter" && handleExpandGroup(group)}
+                  className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-[#FAFAFA] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     {group.type === "group" ? (
@@ -204,7 +207,7 @@ export default function SettingsPage() {
                     </button>
                     {isExpanded ? <ChevronUp size={14} className="text-[#6B6B6B]" /> : <ChevronDown size={14} className="text-[#6B6B6B]" />}
                   </div>
-                </button>
+                </div>
 
                 {/* Expanded: member list + invite */}
                 {isExpanded && (

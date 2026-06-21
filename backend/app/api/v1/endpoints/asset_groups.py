@@ -97,6 +97,4 @@ def remove_member(
 
 
 def _flatten_member(row: dict) -> dict:
-    profiles = row.pop("profiles", None)
-    row["display_name"] = profiles["display_name"] if profiles else None
     return row
