@@ -18,6 +18,7 @@ Run from `frontend/`:
 - `npm run dev` — start dev server (http://localhost:3000)
 - `npm run build` — production build
 - `npm run lint` — ESLint
+- `npm run test:e2e` — Playwright e2e tests (`e2e/` dir; dev server must be running)
 
 ## Key Components
 

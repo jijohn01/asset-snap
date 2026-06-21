@@ -13,6 +13,7 @@
 - `uv sync` — 초기 환경 설정 / 의존성 설치
 - `uv run uvicorn app.main:app --reload` — 개발 서버 시작 (http://localhost:8000)
 - 또는 루트에서 `scripts/dev.ps1` — 프론트엔드 + 백엔드 동시 실행 (별도 터미널)
+- `uv run pytest` — 테스트 실행 (`tests/test_health.py`, `test_auth.py`, `test_calculations.py`)
 - 헬스 체크: `GET /health`
 
 ## API 구조
@@ -85,6 +86,10 @@ ALLOWED_ORIGINS=["http://localhost:3000"]
 **⚠️ Gotcha:** `ALLOWED_ORIGINS`는 반드시 **JSON 배열 문자열** 형식이어야 함 (pydantic-settings v2.6.1 이상). 쉼표 구분 문자열 불가.
 
 **⚠️ Gotcha:** `.env` 파일은 gitignored라 워크트리 생성 시 자동 복사 안 됨 — 수동으로 복사 후 `uv sync` 실행.
+
+**⚠️ Gotcha:** `app/api/v1/endpoints/user_items.py`는 `router.py`에 미등록된 데드 코드 — 실제 엔드포인트로 동작하지 않음.
+
+**참고:** `data/` 디렉터리(`snapshots.json`, `user_items.json`)는 `local_store.py`용 레거시 로컬 데이터. 무시해도 됨.
 
 ## 데이터 모델 (JSONB)
 

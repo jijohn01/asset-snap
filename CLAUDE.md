@@ -101,6 +101,16 @@ SUPABASE_ANON_KEY=
 ALLOWED_ORIGINS=["http://localhost:3000"]   # JSON 배열 형식 필수
 ```
 
+## Testing
+
+```bash
+# 백엔드
+cd backend && uv run pytest
+
+# 프론트엔드 e2e (dev 서버 실행 중이어야 함)
+cd frontend && npm run test:e2e
+```
+
 ## Pages & Routes
 
 | Route | Description |
