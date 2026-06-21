@@ -7,8 +7,10 @@ import { supabase } from "@/lib/supabase";
 
 export default function SignupPage() {
   const router = useRouter();
+  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,8 +18,18 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
+    if (!nickname.trim()) {
+      setError("닉네임을 입력해주세요.");
+      return;
+    }
+
     if (password.length < 6) {
       setError("비밀번호는 6자 이상이어야 합니다.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("비밀번호가 일치하지 않습니다.");
       return;
     }
 
@@ -38,6 +50,11 @@ export default function SignupPage() {
       return;
     }
 
+    await supabase
+      .from("profiles")
+      .update({ display_name: nickname.trim() })
+      .eq("id", data.user!.id);
+
     router.push("/");
     router.refresh();
   }
@@ -54,6 +71,21 @@ export default function SignupPage() {
           <h2 className="text-lg font-semibold text-[#111111] mb-6">회원가입</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[#111111] mb-1.5">
+                닉네임
+              </label>
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                required
+                autoComplete="nickname"
+                className="w-full px-3 py-2.5 text-sm border border-[#E4E4E7] rounded-lg bg-white text-[#111111] placeholder:text-[#BBBBBB] focus:outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10 transition-colors"
+                placeholder="홍길동"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-[#111111] mb-1.5">
                 이메일
@@ -81,6 +113,21 @@ export default function SignupPage() {
                 autoComplete="new-password"
                 className="w-full px-3 py-2.5 text-sm border border-[#E4E4E7] rounded-lg bg-white text-[#111111] placeholder:text-[#BBBBBB] focus:outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10 transition-colors"
                 placeholder="6자 이상"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#111111] mb-1.5">
+                비밀번호 확인
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                className="w-full px-3 py-2.5 text-sm border border-[#E4E4E7] rounded-lg bg-white text-[#111111] placeholder:text-[#BBBBBB] focus:outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10 transition-colors"
+                placeholder="비밀번호 재입력"
               />
             </div>
 

@@ -48,6 +48,10 @@ async function authHeader(): Promise<Record<string, string>> {
 // ── Group ID ─────────────────────────────────────────────────
 let _groupId: string | null = null;
 
+export function resetGroupIdCache() {
+  _groupId = null;
+}
+
 export async function getDefaultGroupId(): Promise<string> {
   if (_groupId) return _groupId;
   const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
