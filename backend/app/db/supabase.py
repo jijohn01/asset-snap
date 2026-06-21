@@ -69,13 +69,25 @@ def delete_group(group_id: str) -> None:
 
 def get_members(group_id: str) -> list[dict]:
     db = get_supabase()
-    res = (
+    members = (
         db.table("asset_group_members")
-        .select("*, profiles(display_name)")
+        .select("*")
         .eq("group_id", group_id)
         .execute()
-    )
-    return res.data or []
+    ).data or []
+    if not members:
+        return []
+    user_ids = [m["user_id"] for m in members]
+    profiles_data = (
+        db.table("profiles")
+        .select("id, display_name")
+        .in_("id", user_ids)
+        .execute()
+    ).data or []
+    profiles = {p["id"]: p.get("display_name") for p in profiles_data}
+    for m in members:
+        m["display_name"] = profiles.get(m["user_id"])
+    return members
 
 
 def add_member(group_id: str, user_id: str, role: str = "viewer") -> dict:
@@ -109,6 +121,13 @@ def remove_member(group_id: str, user_id: str) -> None:
         .eq("user_id", user_id)
         .execute()
     )
+
+
+def get_user_id_by_email(email: str) -> str | None:
+    db = get_supabase()
+    users = db.auth.admin.list_users()
+    user = next((u for u in users if u.email == email), None)
+    return str(user.id) if user else None
 
 
 def get_member_role(group_id: str, user_id: str) -> str | None:

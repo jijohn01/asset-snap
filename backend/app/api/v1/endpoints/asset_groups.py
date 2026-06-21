@@ -67,7 +67,10 @@ def invite_member(group_id: str, body: MemberInvite, user_id: str = Depends(get_
     _require_role(group_id, user_id, "owner")
     if body.role not in ("owner", "editor", "viewer"):
         raise HTTPException(status_code=400, detail="role은 owner/editor/viewer 중 하나")
-    return db.add_member(group_id, body.user_id, body.role)
+    target_user_id = db.get_user_id_by_email(body.email)
+    if not target_user_id:
+        raise HTTPException(status_code=404, detail="해당 이메일의 사용자를 찾을 수 없습니다.")
+    return db.add_member(group_id, target_user_id, body.role)
 
 
 @router.put("/{group_id}/members/{target_user_id}", response_model=MemberResponse)
@@ -94,6 +97,4 @@ def remove_member(
 
 
 def _flatten_member(row: dict) -> dict:
-    profiles = row.pop("profiles", None)
-    row["display_name"] = profiles["display_name"] if profiles else None
     return row

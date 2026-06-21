@@ -105,11 +105,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSnapshots()
-      .then((data) =>
-        setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
-      )
-      .finally(() => setLoading(false));
+    function load() {
+      setLoading(true);
+      fetchSnapshots()
+        .then((data) =>
+          setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
+        )
+        .finally(() => setLoading(false));
+    }
+    load();
+    window.addEventListener("group-changed", load);
+    return () => window.removeEventListener("group-changed", load);
   }, []);
 
   const latest = snapshots.at(-1);

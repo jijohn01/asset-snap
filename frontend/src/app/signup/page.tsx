@@ -52,8 +52,7 @@ export default function SignupPage() {
 
     await supabase
       .from("profiles")
-      .update({ display_name: nickname.trim() })
-      .eq("id", data.user!.id);
+      .upsert({ id: data.user!.id, display_name: nickname.trim() });
 
     router.push("/");
     router.refresh();
