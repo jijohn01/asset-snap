@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, User, ChevronDown, ChevronUp, Plus, X } from "lucide-react";
+import { Users, User, ChevronDown, ChevronUp, Plus, X, Pencil, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   fetchGroups,
   fetchGroupMembers,
   createGroup,
+  updateGroup,
   inviteMember,
   updateMemberRole,
   removeMember,
@@ -23,6 +24,9 @@ export default function SettingsPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const [membersByGroup, setMembersByGroup] = useState<Record<string, Member[]>>({});
+
+  const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
+  const [editingGroupName, setEditingGroupName] = useState("");
 
   const [newGroupName, setNewGroupName] = useState("");
   const [creatingGroup, setCreatingGroup] = useState(false);
@@ -129,6 +133,14 @@ export default function SettingsPage() {
     }));
   }
 
+  async function handleRenameGroup(group: Group) {
+    const trimmed = editingGroupName.trim();
+    if (!trimmed || trimmed === group.name) { setEditingGroupId(null); return; }
+    const updated = await updateGroup(group.id, trimmed);
+    setGroups((prev) => prev.map((g) => g.id === group.id ? { ...g, name: updated.name } : g));
+    setEditingGroupId(null);
+  }
+
   function handleSwitchGroup(group: Group) {
     setActiveGroupId(group.id);
     window.location.href = "/";
@@ -173,14 +185,16 @@ export default function SettingsPage() {
             const isExpanded = expandedGroupId === group.id;
             const members = membersByGroup[group.id] ?? [];
 
+            const isEditing = editingGroupId === group.id;
+
             return (
               <div key={group.id} className="rounded-xl border border-[#E4E4E7] bg-white overflow-hidden">
                 {/* Card header */}
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() => handleExpandGroup(group)}
-                  onKeyDown={(e) => e.key === "Enter" && handleExpandGroup(group)}
+                  onClick={() => !isEditing && handleExpandGroup(group)}
+                  onKeyDown={(e) => !isEditing && e.key === "Enter" && handleExpandGroup(group)}
                   className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-[#FAFAFA] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
@@ -189,7 +203,22 @@ export default function SettingsPage() {
                     ) : (
                       <User size={16} className="text-[#6B6B6B]" />
                     )}
-                    <span className="font-semibold text-[#111]">{group.name}</span>
+                    {isEditing ? (
+                      <input
+                        autoFocus
+                        value={editingGroupName}
+                        onChange={(e) => setEditingGroupName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameGroup(group);
+                          if (e.key === "Escape") setEditingGroupId(null);
+                          e.stopPropagation();
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded-md border border-[#3182F6] px-2 py-1 text-sm font-semibold text-[#111] outline-none focus:ring-2 focus:ring-[#3182F6]/20 w-40"
+                      />
+                    ) : (
+                      <span className="font-semibold text-[#111]">{group.name}</span>
+                    )}
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       group.role === "owner" ? "bg-[#EBF3FF] text-[#3182F6]" :
                       group.role === "editor" ? "bg-[#E6F9F5] text-[#00B493]" :
@@ -199,12 +228,40 @@ export default function SettingsPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleSwitchGroup(group); }}
-                      className="rounded-md px-3 py-1 text-xs text-[#3182F6] border border-[#3182F6] hover:bg-[#EBF3FF] transition-colors"
-                    >
-                      이 장부 보기
-                    </button>
+                    {isOwner && isEditing ? (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleRenameGroup(group); }}
+                          className="rounded-md px-2 py-1 text-xs text-white bg-[#3182F6] hover:bg-[#1B6EF3] transition-colors"
+                        >
+                          <Check size={12} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingGroupId(null); }}
+                          className="rounded-md px-2 py-1 text-xs text-[#6B6B6B] border border-[#E4E4E7] hover:bg-[#F5F5F7] transition-colors"
+                        >
+                          <X size={12} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {isOwner && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setEditingGroupId(group.id); setEditingGroupName(group.name); }}
+                            className="rounded-md p-1 text-[#6B6B6B] hover:bg-[#F5F5F7] transition-colors"
+                            title="이름 변경"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleSwitchGroup(group); }}
+                          className="rounded-md px-3 py-1 text-xs text-[#3182F6] border border-[#3182F6] hover:bg-[#EBF3FF] transition-colors"
+                        >
+                          이 장부 보기
+                        </button>
+                      </>
+                    )}
                     {isExpanded ? <ChevronUp size={14} className="text-[#6B6B6B]" /> : <ChevronDown size={14} className="text-[#6B6B6B]" />}
                   </div>
                 </div>

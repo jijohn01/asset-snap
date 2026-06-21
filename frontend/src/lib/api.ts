@@ -101,6 +101,16 @@ export async function fetchGroups(): Promise<Group[]> {
   return res.json();
 }
 
+export async function updateGroup(groupId: string, name: string): Promise<Group> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...await authHeader() },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new Error("이름 변경에 실패했습니다.");
+  return res.json();
+}
+
 export async function createGroup(name: string, type: "personal" | "group"): Promise<Group> {
   const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
     method: "POST",
