@@ -29,8 +29,8 @@ class MemberResponse(BaseModel):
 
 
 class MemberInvite(BaseModel):
-    user_id: str
-    role: str = "viewer"
+    email: str
+    role: str = "editor"
 
 
 class MemberRoleUpdate(BaseModel):

@@ -2,6 +2,21 @@ import { supabase } from "./supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export interface Group {
+  id: string;
+  name: string;
+  type: string;
+  role: string;
+}
+
+export interface Member {
+  group_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+  display_name: string | null;
+}
+
 export interface SnapshotItem {
   label: string;
   category: string;
@@ -45,24 +60,95 @@ async function authHeader(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// ── Group ID ─────────────────────────────────────────────────
+// ── Active Group ──────────────────────────────────────────────
 let _groupId: string | null = null;
 
 export function resetGroupIdCache() {
   _groupId = null;
+  if (typeof window !== "undefined") localStorage.removeItem("activeGroupId");
+}
+
+export function setActiveGroupId(id: string) {
+  _groupId = id;
+  if (typeof window !== "undefined") localStorage.setItem("activeGroupId", id);
 }
 
 export async function getDefaultGroupId(): Promise<string> {
   if (_groupId) return _groupId;
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("activeGroupId");
+    if (saved) { _groupId = saved; return _groupId; }
+  }
   const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
     headers: await authHeader(),
   });
   if (!res.ok) throw new Error("장부를 불러오지 못했습니다.");
-  const groups: { id: string; type: string }[] = await res.json();
+  const groups: Group[] = await res.json();
   const personal = groups.find((g) => g.type === "personal") ?? groups[0];
   if (!personal) throw new Error("개인 장부가 없습니다.");
   _groupId = personal.id;
+  if (typeof window !== "undefined") localStorage.setItem("activeGroupId", _groupId);
   return _groupId;
+}
+
+// ── Groups ────────────────────────────────────────────────────
+
+export async function fetchGroups(): Promise<Group[]> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
+    headers: await authHeader(),
+  });
+  if (!res.ok) throw new Error("장부 목록을 불러오지 못했습니다.");
+  return res.json();
+}
+
+export async function createGroup(name: string, type: "personal" | "group"): Promise<Group> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...await authHeader() },
+    body: JSON.stringify({ name, type }),
+  });
+  if (!res.ok) throw new Error("장부 생성에 실패했습니다.");
+  return res.json();
+}
+
+// ── Members ───────────────────────────────────────────────────
+
+export async function fetchGroupMembers(groupId: string): Promise<Member[]> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members`, {
+    headers: await authHeader(),
+  });
+  if (!res.ok) throw new Error("멤버 목록을 불러오지 못했습니다.");
+  return res.json();
+}
+
+export async function inviteMember(groupId: string, email: string, role: string): Promise<Member> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...await authHeader() },
+    body: JSON.stringify({ email, role }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? "초대에 실패했습니다.");
+  }
+  return res.json();
+}
+
+export async function updateMemberRole(groupId: string, userId: string, role: string): Promise<Member> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members/${userId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...await authHeader() },
+    body: JSON.stringify({ role }),
+  });
+  if (!res.ok) throw new Error("역할 변경에 실패했습니다.");
+  return res.json();
+}
+
+export async function removeMember(groupId: string, userId: string): Promise<void> {
+  await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members/${userId}`, {
+    method: "DELETE",
+    headers: await authHeader(),
+  });
 }
 
 // ── Snapshots ─────────────────────────────────────────────────

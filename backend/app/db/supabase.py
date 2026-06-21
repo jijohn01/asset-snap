@@ -111,6 +111,13 @@ def remove_member(group_id: str, user_id: str) -> None:
     )
 
 
+def get_user_id_by_email(email: str) -> str | None:
+    db = get_supabase()
+    users = db.auth.admin.list_users()
+    user = next((u for u in users if u.email == email), None)
+    return str(user.id) if user else None
+
+
 def get_member_role(group_id: str, user_id: str) -> str | None:
     db = get_supabase()
     res = (
