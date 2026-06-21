@@ -75,18 +75,18 @@ export function setActiveGroupId(id: string) {
 
 export async function getDefaultGroupId(): Promise<string> {
   if (_groupId) return _groupId;
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("activeGroupId");
-    if (saved) { _groupId = saved; return _groupId; }
-  }
   const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
     headers: await authHeader(),
   });
   if (!res.ok) throw new Error("장부를 불러오지 못했습니다.");
   const groups: Group[] = await res.json();
-  const personal = groups.find((g) => g.type === "personal") ?? groups[0];
-  if (!personal) throw new Error("개인 장부가 없습니다.");
-  _groupId = personal.id;
+  // localStorage 값을 현재 사용자의 그룹 목록으로 검증 — 다른 계정의 stale ID 방지
+  const saved = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
+  const current = (saved && groups.find((g) => g.id === saved))
+    ?? groups.find((g) => g.type === "personal")
+    ?? groups[0];
+  if (!current) throw new Error("장부가 없습니다.");
+  _groupId = current.id;
   if (typeof window !== "undefined") localStorage.setItem("activeGroupId", _groupId);
   return _groupId;
 }
