@@ -45,7 +45,7 @@ export default function Sidebar() {
     setActiveGroup(group);
     setActiveGroupId(group.id);
     setOpen(false);
-    router.refresh();
+    window.dispatchEvent(new Event("group-changed"));
   }
 
   async function handleLogout() {

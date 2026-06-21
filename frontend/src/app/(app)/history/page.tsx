@@ -29,11 +29,17 @@ export default function HistoryPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSnapshots()
-      .then((data) =>
-        setSnapshots(data.sort((a, b) => b.snapshot_month.localeCompare(a.snapshot_month)))
-      )
-      .finally(() => setLoading(false));
+    function load() {
+      setLoading(true);
+      fetchSnapshots()
+        .then((data) =>
+          setSnapshots(data.sort((a, b) => b.snapshot_month.localeCompare(a.snapshot_month)))
+        )
+        .finally(() => setLoading(false));
+    }
+    load();
+    window.addEventListener("group-changed", load);
+    return () => window.removeEventListener("group-changed", load);
   }, []);
 
   async function handleDelete(id: string) {
