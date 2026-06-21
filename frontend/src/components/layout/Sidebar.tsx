@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutDashboard, CalendarDays, Settings, LogOut } from "lucide-react";
 import { clsx } from "clsx";
 import { supabase } from "@/lib/supabase";
+import { resetGroupIdCache } from "@/lib/api";
 
 const NAV = [
   { href: "/", label: "대시보드", icon: LayoutDashboard },
@@ -17,6 +18,7 @@ export default function Sidebar() {
   const router = useRouter();
 
   async function handleLogout() {
+    resetGroupIdCache();
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
