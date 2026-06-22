@@ -139,10 +139,10 @@ export default function Topbar() {
             key={href}
             href={href}
             className={clsx(
-              "rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "px-3 py-2 text-sm font-medium transition-colors",
               pathname === href
-                ? "text-[#3182f6]"
-                : "text-[#8b95a1] hover:text-[#333d4b] hover:bg-[#f2f4f6]"
+                ? "text-[#3182f6] border-b-2 border-[#3182f6]"
+                : "text-[#8b95a1] hover:text-[#333d4b] hover:bg-[#f2f4f6] rounded-lg"
             )}
           >
             {label}

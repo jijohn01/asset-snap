@@ -315,7 +315,7 @@ export default function SnapshotForm({
                       value={item.amount || ""}
                       onChange={(e) => setAmount(itemId, e.target.value)}
                       placeholder="0"
-                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-[#F5F5F7] focus:outline-none"
+                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-[#f2f4f6] focus:outline-none"
                     />
                     <span className="shrink-0 text-xs text-gray-400">만원</span>
                   </div>
@@ -344,7 +344,7 @@ export default function SnapshotForm({
                 <button
                   type="button"
                   onClick={() => setAddingCategory(cat)}
-                  className="w-full border-x border-b border-[#e5e8eb] px-8 py-1.5 text-left text-xs text-[#AAAAAA] hover:bg-[#F5F5F7] hover:text-primary-600"
+                  className="w-full border-x border-b border-[#e5e8eb] px-8 py-1.5 text-left text-xs text-[#AAAAAA] hover:bg-[#f2f4f6] hover:text-primary-600"
                 >
                   + 항목 추가
                 </button>
@@ -359,7 +359,7 @@ export default function SnapshotForm({
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <label className="text-sm font-medium text-[#6B6B6B]">기준 월</label>
+        <label className="text-sm font-medium text-[#8b95a1]">기준 월</label>
         <input
           type="month"
           value={month}
@@ -374,7 +374,7 @@ export default function SnapshotForm({
           {renderSection(1)}
           <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm font-bold shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
             <span className="text-[#8b95a1]">순자산</span>
-            <span className={netWorth >= 0 ? "text-[#111111]" : "text-negative"}>
+            <span className={netWorth >= 0 ? "text-[#191f28]" : "text-negative"}>
               {fmt(netWorth)} 만원
             </span>
           </div>
