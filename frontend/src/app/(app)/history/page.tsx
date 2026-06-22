@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import { fetchSnapshots, deleteSnapshot, type Snapshot } from "@/lib/api";
 
-
 function fmt(val: number) {
   return val.toLocaleString() + "만원";
 }
