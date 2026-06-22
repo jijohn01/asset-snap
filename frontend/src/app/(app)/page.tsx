@@ -122,6 +122,7 @@ export default function DashboardPage() {
         .then((data) =>
           setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
         )
+        .catch(() => {})
         .finally(() => setLoading(false));
     }
     load();
