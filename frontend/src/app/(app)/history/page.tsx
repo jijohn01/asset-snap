@@ -35,6 +35,7 @@ export default function HistoryPage() {
         .then((data) =>
           setSnapshots(data.sort((a, b) => b.snapshot_month.localeCompare(a.snapshot_month)))
         )
+        .catch(() => {})
         .finally(() => setLoading(false));
     }
     load();
