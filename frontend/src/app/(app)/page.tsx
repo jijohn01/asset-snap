@@ -188,13 +188,13 @@ export default function DashboardPage() {
       )}
 
       {/* 순자산 히어로 */}
-      <div className="mt-6 rounded-xl border border-[#E4E4E7] bg-white px-6 py-5">
-        <p className="text-xs font-medium uppercase tracking-wider text-[#6B6B6B]">순자산</p>
+      <div className="mt-6 rounded-xl bg-white px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+        <p className="text-xs font-medium uppercase tracking-wider text-[#8b95a1]">순자산</p>
         {!hasData ? (
-          <p className="mt-1 text-5xl font-bold text-[#D0D0D0]">{loading ? "..." : "—"}</p>
+          <p className="mt-1 text-[30px] font-bold text-[#e5e8eb]">{loading ? "..." : "—"}</p>
         ) : (
           <>
-            <p className="mt-1 text-5xl font-bold text-[#111111]">{heroCard!.display}</p>
+            <p className="mt-1 text-[30px] font-bold text-[#191f28] tabular-nums">{heroCard!.display}</p>
             {heroDiff && (
               <div className="mt-2">
                 <DiffBadge amount={heroDiff.amount} pct={heroDiff.pct} isRatio={false} />
@@ -208,9 +208,9 @@ export default function DashboardPage() {
       <div className="mt-3 grid grid-cols-3 gap-3">
         {!hasData
           ? ["자기자본비율", "월소득", "월잉여금"].map((label) => (
-              <div key={label} className="rounded-xl border border-[#E4E4E7] bg-white p-4">
-                <p className="text-xs font-medium text-[#6B6B6B]">{label}</p>
-                <p className="mt-2 text-2xl font-semibold text-[#D0D0D0]">{loading ? "..." : "—"}</p>
+              <div key={label} className="rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                <p className="text-xs font-medium text-[#8b95a1]">{label}</p>
+                <p className="mt-2 text-[22px] font-bold text-[#e5e8eb]">{loading ? "..." : "—"}</p>
               </div>
             ))
           : cardDefs!.slice(1).map(({ label, curr, prevVal, display, isRatio }) => {
@@ -219,9 +219,9 @@ export default function DashboardPage() {
                   ? { amount: curr - prevVal, pct: ((curr - prevVal) / Math.abs(prevVal)) * 100 }
                   : null;
               return (
-                <div key={label} className="rounded-xl border border-[#E4E4E7] bg-white p-4">
-                  <p className="text-xs font-medium text-[#6B6B6B]">{label}</p>
-                  <p className="mt-2 text-2xl font-semibold text-[#111111]">{display}</p>
+                <div key={label} className="rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                  <p className="text-xs font-medium text-[#8b95a1]">{label}</p>
+                  <p className="mt-2 text-[22px] font-bold text-[#191f28] tabular-nums">{display}</p>
                   {diff && (
                     <div className="mt-1">
                       <DiffBadge amount={diff.amount} pct={diff.pct} isRatio={isRatio} />
@@ -233,18 +233,18 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-4">
-        <div className="col-span-2 rounded-xl border border-[#E4E4E7] bg-white p-5">
-          <p className="text-sm font-medium text-[#6B6B6B]">월별 순자산 구성</p>
+        <div className="col-span-2 rounded-xl bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <p className="text-sm font-semibold text-[#333d4b]">월별 순자산 구성</p>
           {hasData ? (
             <>
               <ResponsiveContainer width="100%" height={180} className="mt-3">
                 <BarChart data={chartData} barCategoryGap="25%">
                   {yearBands.map((band, i) => (
-                    <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#F5F5F7" : "transparent"} strokeOpacity={0} />
+                    <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#f2f4f6" : "transparent"} strokeOpacity={0} />
                   ))}
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9B9B9B" }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#8b95a1" }} axisLine={false} tickLine={false} />
                   <YAxis
-                    tick={{ fontSize: 11, fill: "#9B9B9B" }}
+                    tick={{ fontSize: 11, fill: "#8b95a1" }}
                     tickFormatter={(v) => (v >= 10000 ? `${(v / 10000).toFixed(0)}억` : v.toLocaleString())}
                     width={52}
                     axisLine={false}
@@ -262,13 +262,13 @@ export default function DashboardPage() {
               </ResponsiveContainer>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                 {ASSET_CATEGORIES.map((cat) => (
-                  <span key={cat.key} className="flex items-center gap-1 text-xs text-[#9B9B9B]">
+                  <span key={cat.key} className="flex items-center gap-1 text-xs text-[#8b95a1]">
                     <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: cat.color }} />
                     {cat.label}
                   </span>
                 ))}
-                <span className="flex items-center gap-1 text-xs text-[#C0C0C0]">
-                  <span className="inline-block h-2 w-2 rounded-full bg-[#CCCCCC]" />
+                <span className="flex items-center gap-1 text-xs text-[#b0b8c1]">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#e5e8eb]" />
                   연한 색 = 추정값 (이전 스냅샷 유지)
                 </span>
               </div>
@@ -280,8 +280,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-[#E4E4E7] bg-white p-5">
-          <p className="text-sm font-medium text-[#6B6B6B]">자산 구성</p>
+        <div className="rounded-xl bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <p className="text-sm font-semibold text-[#333d4b]">자산 구성</p>
           {pieData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={140} className="mt-2">
@@ -300,8 +300,8 @@ export default function DashboardPage() {
                         const vb = viewBox as { cx: number; cy: number };
                         return (
                           <text x={vb.cx} y={vb.cy} textAnchor="middle" dominantBaseline="middle">
-                            <tspan x={vb.cx} dy="-8" fontSize="10" fill="#6B6B6B">총 자산</tspan>
-                            <tspan x={vb.cx} dy="17" fontSize="12" fontWeight="bold" fill="#111111">
+                            <tspan x={vb.cx} dy="-8" fontSize="10" fill="#8b95a1">총 자산</tspan>
+                            <tspan x={vb.cx} dy="17" fontSize="12" fontWeight="bold" fill="#191f28">
                               {totalPieValue.toLocaleString()}
                             </tspan>
                           </text>
@@ -317,12 +317,12 @@ export default function DashboardPage() {
               </ResponsiveContainer>
               <div className="mt-2 space-y-1">
                 {pieData.map((d) => (
-                  <div key={d.name} className="flex items-center justify-between text-xs text-[#6B6B6B]">
+                  <div key={d.name} className="flex items-center justify-between text-xs text-[#8b95a1]">
                     <span className="flex items-center gap-1.5">
                       <span className="inline-block h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
                       {d.name}
                     </span>
-                    <span className="text-[#9B9B9B]">{d.value.toLocaleString()}만</span>
+                    <span className="text-[#8b95a1]">{d.value.toLocaleString()}만</span>
                   </div>
                 ))}
               </div>

@@ -6,7 +6,7 @@ export const colors = {
     600: '#1A6FF0',
     700: '#1559C7',
   },
-  positive: '#00B493',
+  positive: '#03b26c',
   negative: '#F04452',
 } as const;
 
