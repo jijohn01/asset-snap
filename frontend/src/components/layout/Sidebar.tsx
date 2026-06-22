@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, CalendarDays, Settings, LogOut, ChevronDown, User, Users } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Settings, LogOut, ChevronDown, User, Users, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -91,6 +91,15 @@ export default function Sidebar() {
                 {g.id === activeGroup?.id && <span className="ml-auto text-[#3182F6]">✓</span>}
               </button>
             ))}
+            <div className="border-t border-[#2A2A2A]">
+              <button
+                onClick={() => { setOpen(false); router.push("/settings"); }}
+                className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-[#3182F6] hover:bg-[#252525] transition-colors"
+              >
+                <Plus size={13} className="shrink-0" />
+                새 장부 만들기
+              </button>
+            </div>
           </div>
         )}
       </div>

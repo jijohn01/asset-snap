@@ -14,8 +14,9 @@ import {
   Cell,
   Label,
 } from "recharts";
+import { User, Users } from "lucide-react";
 import { colors } from "@/lib/colors";
-import { fetchSnapshots, type Snapshot, type SnapshotData } from "@/lib/api";
+import { fetchSnapshots, fetchGroups, type Snapshot, type SnapshotData, type Group } from "@/lib/api";
 
 const ASSET_CATEGORIES = [
   { key: "cash_savings",      label: "현금/저축",  color: colors.primary[500] },
@@ -103,10 +104,20 @@ function DiffBadge({ amount, pct, isRatio }: { amount: number; pct: number; isRa
 export default function DashboardPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeGroup, setActiveGroup] = useState<Group | null>(null);
 
   useEffect(() => {
+    function loadGroup() {
+      fetchGroups().then((gs) => {
+        const savedId = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
+        const current = (savedId && gs.find((g) => g.id === savedId)) || gs.find((g) => g.type === "personal") || gs[0];
+        if (current) setActiveGroup(current);
+      }).catch(() => {});
+    }
+
     function load() {
       setLoading(true);
+      loadGroup();
       fetchSnapshots()
         .then((data) =>
           setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
@@ -164,10 +175,17 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-[#111111]">대시보드</h2>
-      <p className="mt-1 text-sm text-[#6B6B6B]">
+      <h2 className="text-2xl font-bold text-[#191f28]">대시보드</h2>
+      <p className="mt-1 text-sm text-[#8b95a1]">
         {latest ? `${latest.snapshot_month.slice(0, 7)} 스냅샷 기준` : "최신 스냅샷 기준"} 자산 현황
       </p>
+      {activeGroup && (
+        <div className="mt-2 inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold"
+          style={{ background: "rgba(100,168,255,0.15)", color: "#2272eb" }}>
+          {activeGroup.type === "group" ? <Users size={11} /> : <User size={11} />}
+          {activeGroup.name}
+        </div>
+      )}
 
       {/* 순자산 히어로 */}
       <div className="mt-6 rounded-xl border border-[#E4E4E7] bg-white px-6 py-5">
