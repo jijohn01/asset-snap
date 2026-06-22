@@ -60,10 +60,10 @@ const SECTIONS = [
 ] as const;
 
 const SECTION_COLORS: Record<string, { header: string; headerText: string; sub: string; subText: string }> = {
-  assets:      { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
-  liabilities: { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
-  income:      { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
-  expenses:    { header: "bg-[#111111]", headerText: "text-white", sub: "bg-[#F5F5F7]", subText: "text-[#6B6B6B]" },
+  assets:      { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  liabilities: { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  income:      { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  expenses:    { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
 };
 
 const SUBCATEGORY_LABELS: Record<string, string> = {
@@ -235,7 +235,7 @@ export default function SnapshotForm({
 
     return (
       <div key={section.id}>
-        <div className={`flex items-center justify-between border border-[#E4E4E7] px-3 py-2 ${colors.header}`}>
+        <div className={`flex items-center justify-between border border-[#e5e8eb] px-3 py-2 ${colors.header}`}>
           <span className={`text-sm font-bold ${colors.headerText}`}>{section.label}</span>
           <span className={`text-sm font-semibold ${colors.headerText}`}>{fmt(sectionTotal)} 만원</span>
         </div>
@@ -252,7 +252,7 @@ export default function SnapshotForm({
                 onDragOver={(e) => { e.preventDefault(); setDragOverCat(cat); setDragOverItemId(null); }}
                 onDrop={(e) => { e.preventDefault(); dragItemId && handleDropOnCat(dragItemId, cat); }}
                 onDragLeave={() => setDragOverCat(null)}
-                className={`flex items-center justify-between border-x border-b border-[#E4E4E7] px-3 py-1.5 ${colors.sub} ${dragOverCat === cat && dragItemId ? "ring-2 ring-inset ring-primary-400" : ""}`}
+                className={`flex items-center justify-between border-x border-b border-[#e5e8eb] px-3 py-1.5 ${colors.sub} ${dragOverCat === cat && dragItemId ? "ring-2 ring-inset ring-primary-400" : ""}`}
               >
                 <span className={`text-xs font-semibold uppercase tracking-wide ${colors.subText}`}>
                   {SUBCATEGORY_LABELS[cat]}
@@ -265,7 +265,7 @@ export default function SnapshotForm({
                   key={itemId}
                   onDragOver={(e) => { e.preventDefault(); setDragOverItemId(itemId); setDragOverCat(null); }}
                   onDrop={(e) => { e.preventDefault(); dragItemId && handleDrop(dragItemId, itemId); }}
-                  className={`flex items-center border-x border-b border-[#E4E4E7] ${idx % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"} ${dragOverItemId === itemId && dragItemId !== itemId ? "border-t-2 border-t-primary-400" : ""}`}
+                  className={`flex items-center border-x border-b border-[#e5e8eb] ${idx % 2 === 0 ? "bg-white" : "bg-[#f2f4f6]"} ${dragOverItemId === itemId && dragItemId !== itemId ? "border-t-2 border-t-primary-400" : ""}`}
                 >
                   <div
                     draggable
@@ -315,7 +315,7 @@ export default function SnapshotForm({
                       value={item.amount || ""}
                       onChange={(e) => setAmount(itemId, e.target.value)}
                       placeholder="0"
-                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-[#F5F5F7] focus:outline-none"
+                      className="w-28 bg-transparent py-1.5 text-right text-sm focus:bg-[#f2f4f6] focus:outline-none"
                     />
                     <span className="shrink-0 text-xs text-gray-400">만원</span>
                   </div>
@@ -323,7 +323,7 @@ export default function SnapshotForm({
               ))}
 
               {addingCategory === cat ? (
-                <div className="flex items-center gap-2 border-x border-b border-[#E4E4E7] bg-[#F5F5F7] px-3 py-1.5">
+                <div className="flex items-center gap-2 border-x border-b border-[#e5e8eb] bg-[#f2f4f6] px-3 py-1.5">
                   <input
                     ref={newLabelInputRef}
                     type="text"
@@ -344,7 +344,7 @@ export default function SnapshotForm({
                 <button
                   type="button"
                   onClick={() => setAddingCategory(cat)}
-                  className="w-full border-x border-b border-[#E4E4E7] px-8 py-1.5 text-left text-xs text-[#AAAAAA] hover:bg-[#F5F5F7] hover:text-primary-600"
+                  className="w-full border-x border-b border-[#e5e8eb] px-8 py-1.5 text-left text-xs text-[#AAAAAA] hover:bg-[#f2f4f6] hover:text-primary-600"
                 >
                   + 항목 추가
                 </button>
@@ -359,12 +359,12 @@ export default function SnapshotForm({
   return (
     <div>
       <div className="mb-5 flex items-center gap-3">
-        <label className="text-sm font-medium text-[#6B6B6B]">기준 월</label>
+        <label className="text-sm font-medium text-[#8b95a1]">기준 월</label>
         <input
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="rounded-lg border border-[#E4E4E7] px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none"
+          className="rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-3 py-1.5 text-sm text-[#333d4b] focus:border-[#3182f6] focus:outline-none transition-colors"
         />
       </div>
 
@@ -372,9 +372,9 @@ export default function SnapshotForm({
         <div className="space-y-4">
           {renderSection(0)}
           {renderSection(1)}
-          <div className="flex items-center justify-between rounded border border-[#E4E4E7] bg-[#F5F5F7] px-3 py-2.5 text-sm font-semibold">
-            <span className="text-[#6B6B6B]">순자산</span>
-            <span className={netWorth >= 0 ? "text-[#111111]" : "text-negative"}>
+          <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm font-bold shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+            <span className="text-[#8b95a1]">순자산</span>
+            <span className={netWorth >= 0 ? "text-[#191f28]" : "text-negative"}>
               {fmt(netWorth)} 만원
             </span>
           </div>
@@ -383,8 +383,8 @@ export default function SnapshotForm({
         <div className="space-y-4">
           {renderSection(2)}
           {renderSection(3)}
-          <div className="flex items-center justify-between rounded border border-[#E4E4E7] bg-[#F5F5F7] px-3 py-2.5 text-sm font-semibold">
-            <span className="text-[#6B6B6B]">월잉여금</span>
+          <div className="flex items-center justify-between rounded-xl bg-white px-4 py-3 text-sm font-bold shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+            <span className="text-[#8b95a1]">월잉여금</span>
             <span className={surplus >= 0 ? "text-positive" : "text-negative"}>
               {fmt(surplus)} 만원
             </span>
@@ -400,7 +400,7 @@ export default function SnapshotForm({
             type="button"
             onClick={onDelete}
             disabled={deleting}
-            className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
+            className="rounded-2xl bg-[rgba(240,68,82,0.08)] px-4 py-2.5 text-sm font-semibold text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] disabled:opacity-40 transition-colors"
           >
             {deleting ? "삭제 중..." : "스냅샷 삭제"}
           </button>
@@ -411,7 +411,7 @@ export default function SnapshotForm({
           type="button"
           onClick={handleSave}
           disabled={submitting}
-          className="rounded-lg bg-primary-500 px-5 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
+          className="rounded-2xl bg-[#3182f6] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
         >
           {submitting ? "저장 중..." : saveLabel}
         </button>

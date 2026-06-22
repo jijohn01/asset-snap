@@ -57,12 +57,12 @@ export default function HistoryPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#111111]">월별 이력</h2>
-          <p className="mt-1 text-sm text-[#6B6B6B]">스냅샷 타임라인</p>
+          <h2 className="text-2xl font-bold text-[#191f28]">월별 이력</h2>
+          <p className="mt-1 text-sm text-[#8b95a1]">스냅샷 타임라인</p>
         </div>
         <Link
           href="/snapshot/new"
-          className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600"
+          className="rounded-xl bg-[#3182f6] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2272eb] transition-colors"
         >
           + 새 스냅샷
         </Link>
@@ -71,8 +71,8 @@ export default function HistoryPage() {
       <div className="mt-6 space-y-3">
         {loading && <p className="text-sm text-gray-400">불러오는 중...</p>}
         {!loading && snapshots.length === 0 && (
-          <div className="rounded-xl border border-[#E4E4E7] bg-white p-8 text-center">
-            <p className="text-sm text-[#9B9B9B]">스냅샷이 없습니다.</p>
+          <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+            <p className="text-sm text-[#8b95a1]">아직 스냅샷이 없어요.</p>
             <Link href="/snapshot/new" className="mt-2 inline-block text-sm text-primary-500 hover:underline">
               첫 스냅샷 입력하기
             </Link>
@@ -83,11 +83,11 @@ export default function HistoryPage() {
           return (
             <div
               key={s.id}
-              className="flex items-center justify-between rounded-xl border border-[#E4E4E7] bg-white p-5 transition-colors hover:bg-[#FAFAFA]"
+              className="flex items-center justify-between rounded-xl bg-white p-5 transition-colors hover:bg-[#f9fafb] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
             >
               <div>
-                <p className="text-sm font-semibold text-[#111111]">{fmtMonth(s.snapshot_month)}</p>
-                <div className="mt-1 flex gap-4 text-xs text-[#9B9B9B]">
+                <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
+                <div className="mt-1 flex gap-4 text-xs text-[#8b95a1]">
                   <span>순자산 {fmt(s.metrics.net_worth)}</span>
                   {diffInfo && (
                     diffInfo.diff === 0 ? (
@@ -107,7 +107,7 @@ export default function HistoryPage() {
               <div className="flex items-center gap-2">
                 <Link
                   href={`/snapshot/${s.id}`}
-                  className="flex items-center gap-1.5 rounded-lg border border-[#E4E4E7] px-3 py-1.5 text-xs text-[#6B6B6B] hover:bg-[#F5F5F7]"
+                  className="flex items-center gap-1.5 rounded-xl bg-[#f2f4f6] px-3 py-1.5 text-xs font-medium text-[#4e5968] hover:bg-[#e8ecf0] transition-colors"
                 >
                   <Pencil size={13} />
                   보기 / 수정
@@ -116,7 +116,7 @@ export default function HistoryPage() {
                   type="button"
                   disabled={deletingId === s.id}
                   onClick={() => handleDelete(s.id)}
-                  className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-xl bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] transition-colors disabled:opacity-50"
                 >
                   <Trash2 size={13} />
                   삭제

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, User, ChevronDown, ChevronUp, Plus, X, Pencil, Check } from "lucide-react";
+import { Users, User, Plus, X, Pencil, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   fetchGroups,
@@ -16,13 +16,24 @@ import {
   type Member,
 } from "@/lib/api";
 
+const ROLE_LEFT_BORDER: Record<string, string> = {
+  owner:  "#3182f6",
+  editor: "#03b26c",
+  viewer: "#e5e8eb",
+};
+
+const ROLE_BADGE: Record<string, string> = {
+  owner:  "bg-[rgba(100,168,255,0.15)] text-[#2272eb]",
+  editor: "bg-[rgba(3,178,108,0.15)] text-[#03b26c]",
+  viewer: "bg-[rgba(2,32,71,0.05)] text-[#4e5968]",
+};
+
 export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [nameLoading, setNameLoading] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
 
   const [groups, setGroups] = useState<Group[]>([]);
-  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const [membersByGroup, setMembersByGroup] = useState<Record<string, Member[]>>({});
 
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
@@ -40,26 +51,28 @@ export default function SettingsPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    async function init() {
+      const { data } = await supabase.auth.getUser();
       if (data.user) {
         setCurrentUserId(data.user.id);
-        supabase
+        const { data: p } = await supabase
           .from("profiles")
           .select("display_name")
           .eq("id", data.user.id)
-          .single()
-          .then(({ data: p }) => {
-            if (p?.display_name) setDisplayName(p.display_name);
-          });
+          .single();
+        if (p?.display_name) setDisplayName(p.display_name);
       }
-    });
-    loadGroups();
+      const gs = await fetchGroups();
+      setGroups(gs);
+      await Promise.all(
+        gs.filter((g) => g.role === "owner").map(async (g) => {
+          const members = await fetchGroupMembers(g.id);
+          setMembersByGroup((prev) => ({ ...prev, [g.id]: members }));
+        })
+      );
+    }
+    init();
   }, []);
-
-  async function loadGroups() {
-    const gs = await fetchGroups();
-    setGroups(gs);
-  }
 
   async function handleSaveName() {
     if (!currentUserId || !displayName.trim()) return;
@@ -70,24 +83,13 @@ export default function SettingsPage() {
     setTimeout(() => setNameSaved(false), 2000);
   }
 
-  async function handleExpandGroup(group: Group) {
-    if (expandedGroupId === group.id) {
-      setExpandedGroupId(null);
-      return;
-    }
-    setExpandedGroupId(group.id);
-    if (!membersByGroup[group.id]) {
-      const members = await fetchGroupMembers(group.id);
-      setMembersByGroup((prev) => ({ ...prev, [group.id]: members }));
-    }
-  }
-
   async function handleCreateGroup() {
     if (!newGroupName.trim()) return;
     setCreatingGroup(true);
     try {
       const g = await createGroup(newGroupName.trim(), "group");
       setGroups((prev) => [...prev, g]);
+      setMembersByGroup((prev) => ({ ...prev, [g.id]: [] }));
       setNewGroupName("");
       setShowNewGroupForm(false);
     } finally {
@@ -148,61 +150,58 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-10">
-      <h1 className="mb-8 text-2xl font-bold text-[#111]">설정</h1>
+      <h1 className="mb-8 text-[22px] font-bold text-[#191f28]">설정</h1>
 
       {/* ── 프로필 ── */}
       <section className="mb-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6B6B] border-b border-[#E4E4E7] pb-2">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#8b95a1] border-b border-[#e5e8eb] pb-2">
           프로필
         </h2>
         <div className="flex items-center gap-3">
-          <label className="w-16 shrink-0 text-sm text-[#6B6B6B]">닉네임</label>
+          <label className="w-16 shrink-0 text-sm text-[#6b7684]">닉네임</label>
           <input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="flex-1 max-w-xs rounded-lg border border-[#E4E4E7] px-3 py-2 text-sm outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10"
+            onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
+            placeholder="닉네임 입력"
+            className="flex-1 max-w-xs rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
           />
           <button
             onClick={handleSaveName}
             disabled={nameLoading}
-            className="rounded-lg bg-[#3182F6] px-4 py-2 text-sm font-medium text-white hover:bg-[#1B6EF3] disabled:opacity-50 transition-colors"
+            className="rounded-2xl bg-[#3182f6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
           >
-            {nameSaved ? "저장됨 ✓" : nameLoading ? "저장 중..." : "저장"}
+            {nameSaved ? "저장됨" : nameLoading ? "저장 중" : "저장"}
           </button>
         </div>
       </section>
 
       {/* ── 내 장부 ── */}
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6B6B] border-b border-[#E4E4E7] pb-2">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#8b95a1] border-b border-[#e5e8eb] pb-2">
           내 장부
         </h2>
 
         <div className="space-y-3">
           {groups.map((group) => {
             const isOwner = group.role === "owner";
-            const isExpanded = expandedGroupId === group.id;
             const members = membersByGroup[group.id] ?? [];
-
             const isEditing = editingGroupId === group.id;
+            const accentColor = ROLE_LEFT_BORDER[group.role] ?? "#e5e8eb";
 
             return (
-              <div key={group.id} className="rounded-xl border border-[#E4E4E7] bg-white overflow-hidden">
+              <div
+                key={group.id}
+                className="bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                style={{ borderLeft: `4px solid ${accentColor}` }}
+              >
                 {/* Card header */}
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => !isEditing && handleExpandGroup(group)}
-                  onKeyDown={(e) => !isEditing && e.key === "Enter" && handleExpandGroup(group)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-[#FAFAFA] transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    {group.type === "group" ? (
-                      <Users size={16} className="text-[#6B6B6B]" />
-                    ) : (
-                      <User size={16} className="text-[#6B6B6B]" />
-                    )}
+                <div className="flex items-center justify-between px-5 py-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {group.type === "group"
+                      ? <Users size={15} className="shrink-0 text-[#8b95a1]" />
+                      : <User size={15} className="shrink-0 text-[#8b95a1]" />}
                     {isEditing ? (
                       <input
                         autoFocus
@@ -211,34 +210,28 @@ export default function SettingsPage() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleRenameGroup(group);
                           if (e.key === "Escape") setEditingGroupId(null);
-                          e.stopPropagation();
                         }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="rounded-md border border-[#3182F6] px-2 py-1 text-sm font-semibold text-[#111] outline-none focus:ring-2 focus:ring-[#3182F6]/20 w-40"
+                        className="rounded-lg border border-[#3182f6] px-2 py-1 text-sm font-semibold text-[#191f28] outline-none w-36"
                       />
                     ) : (
-                      <span className="font-semibold text-[#111]">{group.name}</span>
+                      <span className="font-semibold text-[#191f28] truncate">{group.name}</span>
                     )}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      group.role === "owner" ? "bg-[#EBF3FF] text-[#3182F6]" :
-                      group.role === "editor" ? "bg-[#E6F9F5] text-[#00B493]" :
-                      "bg-[#F5F5F7] text-[#6B6B6B]"
-                    }`}>
+                    <span className={`shrink-0 rounded-xl px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[group.role] ?? ROLE_BADGE.viewer}`}>
                       {group.role}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 shrink-0 ml-3">
                     {isOwner && isEditing ? (
                       <>
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleRenameGroup(group); }}
-                          className="rounded-md px-2 py-1 text-xs text-white bg-[#3182F6] hover:bg-[#1B6EF3] transition-colors"
+                          onClick={() => handleRenameGroup(group)}
+                          className="rounded-lg p-1.5 bg-[#3182f6] text-white hover:bg-[#2272eb] transition-colors"
                         >
                           <Check size={12} />
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setEditingGroupId(null); }}
-                          className="rounded-md px-2 py-1 text-xs text-[#6B6B6B] border border-[#E4E4E7] hover:bg-[#F5F5F7] transition-colors"
+                          onClick={() => setEditingGroupId(null)}
+                          className="rounded-lg p-1.5 border border-[#e5e8eb] text-[#8b95a1] hover:bg-[#f2f4f6] transition-colors"
                         >
                           <X size={12} />
                         </button>
@@ -247,48 +240,55 @@ export default function SettingsPage() {
                       <>
                         {isOwner && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); setEditingGroupId(group.id); setEditingGroupName(group.name); }}
-                            className="rounded-md p-1 text-[#6B6B6B] hover:bg-[#F5F5F7] transition-colors"
+                            onClick={() => { setEditingGroupId(group.id); setEditingGroupName(group.name); }}
+                            className="rounded-lg p-1.5 text-[#b0b8c1] hover:text-[#4e5968] hover:bg-[#f2f4f6] transition-colors"
                             title="이름 변경"
                           >
                             <Pencil size={13} />
                           </button>
                         )}
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleSwitchGroup(group); }}
-                          className="rounded-md px-3 py-1 text-xs text-[#3182F6] border border-[#3182F6] hover:bg-[#EBF3FF] transition-colors"
+                          onClick={() => handleSwitchGroup(group)}
+                          className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#2272eb] bg-[rgba(100,168,255,0.15)] hover:bg-[rgba(100,168,255,0.25)] transition-colors"
                         >
-                          이 장부 보기
+                          보기
                         </button>
                       </>
                     )}
-                    {isExpanded ? <ChevronUp size={14} className="text-[#6B6B6B]" /> : <ChevronDown size={14} className="text-[#6B6B6B]" />}
                   </div>
                 </div>
 
-                {/* Expanded: member list + invite */}
-                {isExpanded && (
-                  <div className="border-t border-[#F0F0F0] px-5 py-4">
-                    <p className="mb-2 text-xs font-medium text-[#6B6B6B]">멤버</p>
-                    <div className="space-y-2 mb-4">
+                {/* Member section */}
+                {isOwner ? (
+                  <div className="border-t border-[#f2f4f6] px-5 pb-5">
+                    <p className="pt-4 pb-2 text-xs font-semibold text-[#8b95a1] uppercase tracking-wide">멤버</p>
+                    <div className="space-y-1">
                       {members.map((m) => (
-                        <div key={m.user_id} className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#EBF3FF] text-xs font-semibold text-[#3182F6]">
+                        <div key={m.user_id} className="flex items-center justify-between gap-2 min-h-[52px]">
+                          <div className="flex items-center gap-2.5">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                              style={{
+                                background: m.user_id === currentUserId ? "rgba(100,168,255,0.15)" : "rgba(2,32,71,0.05)",
+                                color: m.user_id === currentUserId ? "#2272eb" : "#4e5968",
+                              }}>
                               {(m.display_name ?? m.user_id).charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-sm text-[#111]">
-                              {m.display_name ?? "알 수 없음"}
-                              {m.user_id === currentUserId && <span className="ml-1 text-xs text-[#aaa]">(나)</span>}
-                            </span>
+                            <div>
+                              <span className="text-sm font-medium text-[#333d4b]">
+                                {m.display_name ?? "알 수 없음"}
+                              </span>
+                              {m.user_id === currentUserId && (
+                                <span className="ml-1.5 text-xs text-[#b0b8c1]">나</span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {isOwner && m.user_id !== currentUserId ? (
+                            {m.user_id !== currentUserId ? (
                               <>
                                 <select
                                   value={m.role}
                                   onChange={(e) => handleRoleChange(group.id, m.user_id, e.target.value)}
-                                  className="rounded-md border border-[#E4E4E7] px-2 py-1 text-xs outline-none focus:border-[#3182F6]"
+                                  className="rounded-lg border border-[#e5e8eb] bg-white px-2 py-1.5 text-xs text-[#4e5968] outline-none focus:border-[#3182f6] cursor-pointer"
                                 >
                                   <option value="owner">owner</option>
                                   <option value="editor">editor</option>
@@ -296,17 +296,13 @@ export default function SettingsPage() {
                                 </select>
                                 <button
                                   onClick={() => handleRemoveMember(group.id, m.user_id)}
-                                  className="rounded-md border border-[#fcd2d5] px-2 py-1 text-xs text-[#F04452] hover:bg-[#fff5f6] transition-colors"
+                                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] transition-colors"
                                 >
                                   제거
                                 </button>
                               </>
                             ) : (
-                              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                                m.role === "owner" ? "bg-[#EBF3FF] text-[#3182F6]" :
-                                m.role === "editor" ? "bg-[#E6F9F5] text-[#00B493]" :
-                                "bg-[#F5F5F7] text-[#6B6B6B]"
-                              }`}>
+                              <span className={`rounded-xl px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[m.role] ?? ROLE_BADGE.viewer}`}>
                                 {m.role}
                               </span>
                             )}
@@ -315,50 +311,53 @@ export default function SettingsPage() {
                       ))}
                     </div>
 
-                    {/* Invite form (owner only) */}
-                    {isOwner && (
-                      <div className="border-t border-[#F0F0F0] pt-4">
-                        <p className="mb-2 text-xs font-medium text-[#6B6B6B]">멤버 초대</p>
-                        <div className="flex gap-2">
-                          <input
-                            type="email"
-                            value={inviteEmail[group.id] ?? ""}
-                            onChange={(e) => setInviteEmail((prev) => ({ ...prev, [group.id]: e.target.value }))}
-                            onKeyDown={(e) => e.key === "Enter" && handleInvite(group.id)}
-                            placeholder="이메일 입력..."
-                            className="flex-1 rounded-lg border border-[#E4E4E7] px-3 py-2 text-sm outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10"
-                          />
-                          <select
-                            value={inviteRole[group.id] ?? "editor"}
-                            onChange={(e) => setInviteRole((prev) => ({ ...prev, [group.id]: e.target.value }))}
-                            className="rounded-lg border border-[#E4E4E7] px-2 py-2 text-sm outline-none focus:border-[#3182F6]"
-                          >
-                            <option value="editor">editor</option>
-                            <option value="viewer">viewer</option>
-                          </select>
-                          <button
-                            onClick={() => handleInvite(group.id)}
-                            disabled={inviteLoading[group.id]}
-                            className="rounded-lg bg-[#3182F6] px-4 py-2 text-sm font-medium text-white hover:bg-[#1B6EF3] disabled:opacity-50 transition-colors"
-                          >
-                            {inviteLoading[group.id] ? "..." : "초대"}
-                          </button>
-                        </div>
-                        {inviteError[group.id] && (
-                          <p className="mt-1.5 text-xs text-[#F04452]">{inviteError[group.id]}</p>
-                        )}
+                    {/* Invite */}
+                    <div className="mt-3 pt-3 border-t border-[#f2f4f6]">
+                      <p className="mb-2 text-xs font-semibold text-[#8b95a1] uppercase tracking-wide">멤버 초대</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          value={inviteEmail[group.id] ?? ""}
+                          onChange={(e) => setInviteEmail((prev) => ({ ...prev, [group.id]: e.target.value }))}
+                          onKeyDown={(e) => e.key === "Enter" && handleInvite(group.id)}
+                          placeholder="이메일 주소"
+                          className="flex-1 rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-2.5 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+                        />
+                        <select
+                          value={inviteRole[group.id] ?? "editor"}
+                          onChange={(e) => setInviteRole((prev) => ({ ...prev, [group.id]: e.target.value }))}
+                          className="rounded-[14px] border border-[rgba(2,32,71,0.05)] bg-[rgba(0,23,51,0.02)] px-3 py-2.5 text-sm text-[#4e5968] outline-none focus:border-[#3182f6] cursor-pointer"
+                        >
+                          <option value="editor">editor</option>
+                          <option value="viewer">viewer</option>
+                        </select>
+                        <button
+                          onClick={() => handleInvite(group.id)}
+                          disabled={inviteLoading[group.id]}
+                          className="rounded-2xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
+                        >
+                          {inviteLoading[group.id] ? "..." : "초대"}
+                        </button>
                       </div>
-                    )}
+                      {inviteError[group.id] && (
+                        <p className="mt-1.5 text-xs text-[#f04452]">{inviteError[group.id]}</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="border-t border-[#f2f4f6] px-5 py-3">
+                    <p className="text-xs text-[#b0b8c1]">멤버 관리는 owner만 가능합니다.</p>
                   </div>
                 )}
               </div>
             );
           })}
 
-          {/* New group */}
+          {/* New group form */}
           {showNewGroupForm ? (
-            <div className="rounded-xl border border-[#E4E4E7] bg-white px-5 py-4">
-              <p className="mb-3 text-sm font-semibold text-[#111]">새 가족 장부 만들기</p>
+            <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] px-5 py-5"
+              style={{ borderLeft: "4px solid #e5e8eb" }}>
+              <p className="mb-3 text-sm font-semibold text-[#191f28]">새 가족 장부 만들기</p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -367,18 +366,18 @@ export default function SettingsPage() {
                   onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
                   placeholder="장부 이름 (예: 우리 가족)"
                   autoFocus
-                  className="flex-1 rounded-lg border border-[#E4E4E7] px-3 py-2 text-sm outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10"
+                  className="flex-1 rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-2.5 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
                 />
                 <button
                   onClick={handleCreateGroup}
                   disabled={creatingGroup || !newGroupName.trim()}
-                  className="rounded-lg bg-[#3182F6] px-4 py-2 text-sm font-medium text-white hover:bg-[#1B6EF3] disabled:opacity-50 transition-colors"
+                  className="rounded-2xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
                 >
-                  {creatingGroup ? "생성 중..." : "만들기"}
+                  {creatingGroup ? "생성 중" : "만들기"}
                 </button>
                 <button
                   onClick={() => { setShowNewGroupForm(false); setNewGroupName(""); }}
-                  className="rounded-lg border border-[#E4E4E7] px-3 py-2 text-sm text-[#6B6B6B] hover:bg-[#F5F5F7] transition-colors"
+                  className="rounded-2xl border border-[#e5e8eb] px-3 py-2.5 text-sm text-[#8b95a1] hover:bg-[#f2f4f6] transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -387,9 +386,9 @@ export default function SettingsPage() {
           ) : (
             <button
               onClick={() => setShowNewGroupForm(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#D1D5DB] py-4 text-sm text-[#6B6B6B] hover:border-[#3182F6] hover:text-[#3182F6] hover:bg-[#F0F7FF] transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#e5e8eb] py-4 text-sm font-medium text-[#8b95a1] hover:border-[#3182f6] hover:text-[#2272eb] hover:bg-[rgba(100,168,255,0.05)] transition-all"
             >
-              <Plus size={16} />
+              <Plus size={15} />
               새 가족 장부 만들기
             </button>
           )}
