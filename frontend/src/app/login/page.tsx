@@ -30,19 +30,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center">
+    <div className="min-h-screen bg-[#f2f4f6] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-[#111111] tracking-tight">AssetNavigator</h1>
-          <p className="mt-1 text-sm text-[#6B6B6B]">개인 자산 관리 서비스</p>
+          <h1 className="text-[22px] font-bold text-[#191f28] tracking-tight">Asset Snap</h1>
+          <p className="mt-1.5 text-sm text-[#8b95a1]">나의 자산을 한눈에</p>
         </div>
 
-        <div className="bg-white border border-[#E4E4E7] rounded-2xl p-8">
-          <h2 className="text-lg font-semibold text-[#111111] mb-6">로그인</h2>
+        <div className="bg-white rounded-2xl p-8 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <h2 className="text-lg font-bold text-[#191f28] mb-6">로그인</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#111111] mb-1.5">
+              <label className="block text-sm font-medium text-[#333d4b] mb-2">
                 이메일
               </label>
               <input
@@ -51,13 +51,13 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-3 py-2.5 text-sm border border-[#E4E4E7] rounded-lg bg-white text-[#111111] placeholder:text-[#BBBBBB] focus:outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10 transition-colors"
                 placeholder="name@email.com"
+                className="w-full rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#111111] mb-1.5">
+              <label className="block text-sm font-medium text-[#333d4b] mb-2">
                 비밀번호
               </label>
               <input
@@ -66,27 +66,27 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-3 py-2.5 text-sm border border-[#E4E4E7] rounded-lg bg-white text-[#111111] placeholder:text-[#BBBBBB] focus:outline-none focus:border-[#3182F6] focus:ring-2 focus:ring-[#3182F6]/10 transition-colors"
                 placeholder="••••••••"
+                className="w-full rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-[#F04452]">{error}</p>
+              <p className="text-sm text-[#f04452]">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 bg-[#3182F6] hover:bg-[#1B6EF3] text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full rounded-2xl bg-[#3182f6] py-3 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors mt-2"
             >
-              {loading ? "로그인 중..." : "로그인"}
+              {loading ? "로그인 중" : "로그인"}
             </button>
           </form>
 
-          <p className="mt-5 text-center text-sm text-[#6B6B6B]">
+          <p className="mt-6 text-center text-sm text-[#8b95a1]">
             계정이 없으신가요?{" "}
-            <Link href="/signup" className="text-[#3182F6] font-medium hover:underline">
+            <Link href="/signup" className="text-[#3182f6] font-semibold hover:underline">
               회원가입
             </Link>
           </p>
