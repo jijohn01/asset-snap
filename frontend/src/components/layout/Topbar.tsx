@@ -68,7 +68,7 @@ export default function Topbar() {
         href="/"
         className="text-base font-semibold text-[#191f28] hover:opacity-75 transition-opacity shrink-0"
       >
-        Asset Snap
+        모으다
       </Link>
 
       {/* 그룹 전환기 */}
