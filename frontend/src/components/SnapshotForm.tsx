@@ -60,10 +60,10 @@ const SECTIONS = [
 ] as const;
 
 const SECTION_COLORS: Record<string, { header: string; headerText: string; sub: string; subText: string }> = {
-  assets:      { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
-  liabilities: { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
-  income:      { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
-  expenses:    { header: "bg-[#191f28]", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  assets:      { header: "bg-primary-500", headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  liabilities: { header: "bg-negative",    headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  income:      { header: "bg-positive",    headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
+  expenses:    { header: "bg-[#4e5968]",   headerText: "text-white", sub: "bg-[#f2f4f6]", subText: "text-[#6b7684]" },
 };
 
 const SUBCATEGORY_LABELS: Record<string, string> = {
