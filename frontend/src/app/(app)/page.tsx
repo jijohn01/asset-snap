@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -34,6 +35,7 @@ type ChartPoint = {
   insurance_pension: number;
   real_estate: number;
   personal_use: number;
+  net_worth: number | null;
 };
 
 function sumCategory(data: SnapshotData, category: string): number {
@@ -57,7 +59,6 @@ function buildChartData(snapshots: Snapshot[]): ChartPoint[] {
   const startMonth = snapshots[0].snapshot_month.slice(0, 7);
   const endMonth = snapshots[snapshots.length - 1].snapshot_month.slice(0, 7);
 
-  let lastTotals = { cash_savings: 0, investments: 0, insurance_pension: 0, real_estate: 0, personal_use: 0 };
   const result: ChartPoint[] = [];
 
   let cur = startMonth;
@@ -73,15 +74,28 @@ function buildChartData(snapshots: Snapshot[]): ChartPoint[] {
       };
       const totalAssets = Object.values(raw).reduce((s, v) => s + v, 0);
       const scale = totalAssets > 0 ? snap.metrics.net_worth / totalAssets : 1;
-      lastTotals = {
+      result.push({
+        month: cur.slice(2, 4) + "." + cur.slice(5, 7),
+        isFilled: false,
         cash_savings:      Math.round(raw.cash_savings      * scale),
         investments:       Math.round(raw.investments       * scale),
         insurance_pension: Math.round(raw.insurance_pension * scale),
         real_estate:       Math.round(raw.real_estate       * scale),
         personal_use:      Math.round(raw.personal_use      * scale),
-      };
+        net_worth: snap.metrics.net_worth,
+      });
+    } else {
+      result.push({
+        month: cur.slice(2, 4) + "." + cur.slice(5, 7),
+        isFilled: true,
+        cash_savings: 0,
+        investments: 0,
+        insurance_pension: 0,
+        real_estate: 0,
+        personal_use: 0,
+        net_worth: null,
+      });
     }
-    result.push({ month: cur.slice(2, 4) + "." + cur.slice(5, 7), isFilled: !snap, ...lastTotals });
     cur = addOneMonth(cur);
   }
   return result;
@@ -239,7 +253,7 @@ export default function DashboardPage() {
           {hasData ? (
             <>
               <ResponsiveContainer width="100%" height={180} className="mt-3">
-                <BarChart data={chartData} barCategoryGap="25%">
+                <ComposedChart data={chartData} barCategoryGap="25%">
                   {yearBands.map((band, i) => (
                     <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#f2f4f6" : "transparent"} strokeOpacity={0} />
                   ))}
@@ -251,15 +265,44 @@ export default function DashboardPage() {
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip formatter={(v: number) => fmt(v)} />
+                  <Tooltip
+                    content={(props) => {
+                      if (!props.active || !props.payload?.length) return null;
+                      if ((props.payload[0].payload as ChartPoint).isFilled) return null;
+                      return (
+                        <div className="rounded-lg bg-white px-3 py-2 text-xs shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+                          <p className="mb-1 font-semibold text-[#333d4b]">{props.label}</p>
+                          {props.payload.map((entry) => (
+                            <div key={String(entry.dataKey)} className="flex items-center gap-1.5 text-[#8b95a1]">
+                              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: entry.color as string }} />
+                              <span>{entry.name}:</span>
+                              <span className="text-[#333d4b]">{fmt(Number(entry.value))}</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }}
+                  />
                   {ASSET_CATEGORIES.map((cat) => (
-                    <Bar key={cat.key} dataKey={cat.key} stackId="a" fill={cat.color} name={cat.label}>
-                      {chartData.map((entry, i) => (
-                        <Cell key={i} fill={cat.color} fillOpacity={entry.isFilled ? 0.25 : 1} />
-                      ))}
-                    </Bar>
+                    <Bar key={cat.key} dataKey={cat.key} stackId="a" fill={cat.color} name={cat.label} />
                   ))}
-                </BarChart>
+                  <Line
+                    dataKey="net_worth"
+                    name="순자산"
+                    type="monotone"
+                    stroke={colors.primary[500]}
+                    strokeWidth={2}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    dot={(props: any) =>
+                      props.payload.isFilled ? (
+                        <g key={`dot-${props.cx}`} />
+                      ) : (
+                        <circle key={`dot-${props.cx}`} cx={props.cx} cy={props.cy} r={3} fill={colors.primary[500]} />
+                      )
+                    }
+                    connectNulls={true}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                 {ASSET_CATEGORIES.map((cat) => (
@@ -268,9 +311,9 @@ export default function DashboardPage() {
                     {cat.label}
                   </span>
                 ))}
-                <span className="flex items-center gap-1 text-xs text-[#b0b8c1]">
-                  <span className="inline-block h-2 w-2 rounded-full bg-[#e5e8eb]" />
-                  연한 색 = 추정값 (이전 스냅샷 유지)
+                <span className="flex items-center gap-1 text-xs text-[#8b95a1]">
+                  <span className="inline-block h-0.5 w-4 rounded-full" style={{ backgroundColor: colors.primary[500] }} />
+                  순자산
                 </span>
               </div>
             </>
