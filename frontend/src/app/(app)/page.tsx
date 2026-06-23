@@ -265,7 +265,24 @@ export default function DashboardPage() {
                     axisLine={false}
                     tickLine={false}
                   />
-                  <Tooltip formatter={(v: number) => fmt(v)} />
+                  <Tooltip
+                    content={(props) => {
+                      if (!props.active || !props.payload?.length) return null;
+                      if ((props.payload[0].payload as ChartPoint).isFilled) return null;
+                      return (
+                        <div className="rounded-lg bg-white px-3 py-2 text-xs shadow-[0_2px_8px_rgba(0,0,0,0.12)]">
+                          <p className="mb-1 font-semibold text-[#333d4b]">{props.label}</p>
+                          {props.payload.map((entry) => (
+                            <div key={String(entry.dataKey)} className="flex items-center gap-1.5 text-[#8b95a1]">
+                              <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: entry.color as string }} />
+                              <span>{entry.name}:</span>
+                              <span className="text-[#333d4b]">{fmt(Number(entry.value))}</span>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }}
+                  />
                   {ASSET_CATEGORIES.map((cat) => (
                     <Bar key={cat.key} dataKey={cat.key} stackId="a" fill={cat.color} name={cat.label} />
                   ))}
