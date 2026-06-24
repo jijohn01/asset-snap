@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const EMAIL = process.env.TEST_EMAIL ?? "jijohn01@naver.com";
+const EMAIL = process.env.TEST_EMAIL ?? "";
 const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 // 오너 권한의 그룹만 설정 페이지에서 멤버 관리 UI가 노출됨

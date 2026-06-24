@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const EMAIL = process.env.TEST_EMAIL ?? "jijohn01@naver.com";
+const EMAIL = process.env.TEST_EMAIL ?? "";
 const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 test.describe("인증", () => {
@@ -10,6 +10,7 @@ test.describe("인증", () => {
   });
 
   test("잘못된 비밀번호로 로그인 실패 시 에러 표시", async ({ page }) => {
+    if (!EMAIL) test.skip();
     await page.goto("/login");
     await page.fill('input[type="email"]', EMAIL);
     await page.fill('input[type="password"]', "wrong-password-123");

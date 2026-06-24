@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const EMAIL = process.env.TEST_EMAIL ?? "jijohn01@naver.com";
+const EMAIL = process.env.TEST_EMAIL ?? "";
 const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 test.describe("대시보드", () => {
