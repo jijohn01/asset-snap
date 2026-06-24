@@ -15,6 +15,7 @@ import {
   Cell,
   Label,
 } from "recharts";
+import Link from "next/link";
 import { User, Users } from "lucide-react";
 import { colors } from "@/lib/colors";
 import { fetchSnapshots, fetchGroups, type Snapshot, type SnapshotData, type Group } from "@/lib/api";
@@ -252,7 +253,7 @@ export default function DashboardPage() {
           <p className="text-sm font-semibold text-[#333d4b]">월별 순자산 구성</p>
           {hasData ? (
             <>
-              <ResponsiveContainer width="100%" height={180} className="mt-3">
+              <ResponsiveContainer width="100%" height={220} className="mt-3">
                 <ComposedChart data={chartData} barCategoryGap="25%">
                   {yearBands.map((band, i) => (
                     <ReferenceArea key={band.year} x1={band.start} x2={band.end} fill={i % 2 === 0 ? "#f2f4f6" : "transparent"} strokeOpacity={0} />
@@ -318,8 +319,20 @@ export default function DashboardPage() {
               </div>
             </>
           ) : (
-            <div className="mt-4 flex h-44 items-center justify-center text-sm text-[#D0D0D0]">
-              {loading ? "불러오는 중..." : "스냅샷 데이터 없음"}
+            <div className="mt-4 flex h-44 flex-col items-center justify-center gap-3">
+              {loading ? (
+                <span className="text-sm text-[#D0D0D0]">불러오는 중...</span>
+              ) : (
+                <>
+                  <p className="text-sm text-[#8b95a1]">아직 입력된 스냅샷이 없어요.</p>
+                  <Link
+                    href="/snapshot/new"
+                    className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                  >
+                    첫 스냅샷 입력하기
+                  </Link>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -328,7 +341,7 @@ export default function DashboardPage() {
           <p className="text-sm font-semibold text-[#333d4b]">자산 구성</p>
           {pieData.length > 0 ? (
             <>
-              <ResponsiveContainer width="100%" height={140} className="mt-2">
+              <ResponsiveContainer width="100%" height={200} className="mt-2">
                 <PieChart>
                   <Pie
                     data={pieData}
