@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const EMAIL = process.env.TEST_EMAIL ?? "jijohn01@naver.com";
+const EMAIL = process.env.TEST_EMAIL ?? "";
 const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 const MOCK_GROUP = [{ id: "g1", name: "내 장부", type: "personal", role: "owner", member_count: 1 }];
