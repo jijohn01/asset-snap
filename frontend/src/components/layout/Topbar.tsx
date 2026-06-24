@@ -66,9 +66,10 @@ export default function Topbar() {
       {/* 로고 */}
       <Link
         href="/"
-        className="text-base font-semibold text-[#191f28] hover:opacity-75 transition-opacity shrink-0"
+        className="text-lg hover:opacity-75 transition-opacity shrink-0"
       >
-        모으다
+        <span className="font-bold text-primary-500">GET</span>
+        <span className="font-bold text-ink">DON</span>
       </Link>
 
       {/* 그룹 전환기 */}

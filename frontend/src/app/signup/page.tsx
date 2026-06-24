@@ -62,7 +62,10 @@ export default function SignupPage() {
     <div className="min-h-screen bg-[#f2f4f6] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-[22px] font-bold text-[#191f28] tracking-tight">모으다</h1>
+          <h1 className="text-3xl">
+            <span className="font-bold text-primary-500">GET</span>
+            <span className="font-bold text-ink">DON</span>
+          </h1>
           <p className="mt-1.5 text-sm text-[#8b95a1]">나의 자산을 한눈에</p>
         </div>
 
