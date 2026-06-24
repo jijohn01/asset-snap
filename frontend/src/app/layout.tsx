@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "모으다",
-  description: "월간 자산 스냅샷 네비게이터",
+  title: "GETDON",
+  description: "나와 우리의 자산을 한눈에",
 };
 
 export default function RootLayout({
