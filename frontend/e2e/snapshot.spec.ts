@@ -112,7 +112,7 @@ test.describe("스냅샷 CRUD (#54)", () => {
     await expect(page.getByText(/9,000만원/)).toBeVisible();
   });
 
-  test("스냅샷 삭제 → 히스토리에서 제거 확인", async ({ page }) => {
+  test("스냅샷 삭제 → 인라인 확인 후 히스토리에서 제거", async ({ page }) => {
     if (!PASSWORD) test.skip();
     await mockGroups(page);
     await page.route("**/api/v1/asset-groups/g1/snapshots/", (route) =>
@@ -125,18 +125,42 @@ test.describe("스냅샷 CRUD (#54)", () => {
       return route.continue();
     });
 
-    // confirm 다이얼로그 자동 수락
-    page.on("dialog", (dialog) => dialog.accept());
-
     await login(page);
     await page.goto("/history");
 
     await page.waitForSelector('button:text("삭제")', { timeout: 5000 });
     await expect(page.getByText("2026년 6월")).toBeVisible();
-    await page.click('button:text("삭제")');
 
-    // 삭제 후 스냅샷이 제거되고 빈 상태 메시지가 표시되어야 함
+    // 삭제 버튼 클릭 → 인라인 confirm UI 표시
+    await page.click('button:text("삭제")');
+    await expect(page.getByTestId("confirm-delete")).toBeVisible({ timeout: 2000 });
+    await expect(page.getByTestId("confirm-cancel")).toBeVisible({ timeout: 2000 });
+
+    // 인라인 [삭제] 버튼 클릭 → 항목 제거
+    await page.getByTestId("confirm-delete").click();
     await expect(page.getByText("2026년 6월")).not.toBeVisible({ timeout: 5000 });
     await expect(page.getByText("아직 스냅샷이 없어요.")).toBeVisible();
+  });
+
+  test("스냅샷 삭제 취소 → 항목 유지", async ({ page }) => {
+    if (!PASSWORD) test.skip();
+    await mockGroups(page);
+    await page.route("**/api/v1/asset-groups/g1/snapshots/", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([MOCK_SNAPSHOT]) })
+    );
+
+    await login(page);
+    await page.goto("/history");
+
+    await page.waitForSelector('button:text("삭제")', { timeout: 5000 });
+
+    // 삭제 버튼 클릭 → 인라인 confirm 표시
+    await page.click('button:text("삭제")');
+    await expect(page.getByTestId("confirm-delete")).toBeVisible({ timeout: 2000 });
+
+    // [취소] 클릭 → confirm 해제, 항목 유지
+    await page.getByTestId("confirm-cancel").click();
+    await expect(page.getByTestId("confirm-delete")).not.toBeVisible();
+    await expect(page.getByText("2026년 6월")).toBeVisible();
   });
 });
