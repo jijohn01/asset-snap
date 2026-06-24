@@ -5,7 +5,7 @@
 - **프레임워크:** FastAPI + uvicorn
 - **패키지 매니저:** `uv` — 패키지 추가는 `uv add <패키지>`, 의존성 설치는 `uv sync`
 - **설정:** `pydantic-settings` — `backend/.env` 파일에서 읽음 (`.env.example` 복사해서 생성)
-- **DB:** Supabase (PostgreSQL) — `db/supabase.py` (CRUD 함수), `local_store.py` 미사용
+- **DB:** Supabase (PostgreSQL) — `db/supabase.py` (CRUD 함수)
 
 ## 개발 명령어
 
@@ -87,9 +87,7 @@ ALLOWED_ORIGINS=["http://localhost:3000"]
 
 **⚠️ Gotcha:** `.env` 파일은 gitignored라 워크트리 생성 시 자동 복사 안 됨 — 수동으로 복사 후 `uv sync` 실행.
 
-**⚠️ Gotcha:** `app/api/v1/endpoints/user_items.py`는 `router.py`에 미등록된 데드 코드 — 실제 엔드포인트로 동작하지 않음.
-
-**참고:** `data/` 디렉터리(`snapshots.json`, `user_items.json`)는 `local_store.py`용 레거시 로컬 데이터. 무시해도 됨.
+**참고:** `data/` 디렉터리(`snapshots.json`, `user_items.json`)는 레거시 로컬 데이터. 무시해도 됨.
 
 ## 데이터 모델 (JSONB)
 
