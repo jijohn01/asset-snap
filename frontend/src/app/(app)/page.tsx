@@ -206,8 +206,13 @@ export default function DashboardPage() {
       {/* 순자산 히어로 */}
       <div className="mt-6 rounded-xl bg-white px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
         <p className="text-xs font-medium uppercase tracking-wider text-[#8b95a1]">순자산</p>
-        {!hasData ? (
-          <p className="mt-1 text-[30px] font-bold text-[#e5e8eb]">{loading ? "..." : "—"}</p>
+        {loading ? (
+          <div className="mt-3 animate-pulse space-y-2">
+            <div className="h-8 w-48 rounded-lg bg-[#F0F0F0]" />
+            <div className="h-4 w-24 rounded-lg bg-[#F0F0F0]" />
+          </div>
+        ) : !hasData ? (
+          <p className="mt-1 text-[30px] font-bold text-[#e5e8eb]">—</p>
         ) : (
           <>
             <p className="mt-1 text-[30px] font-bold text-[#191f28] tabular-nums">{heroCard!.display}</p>
@@ -222,11 +227,20 @@ export default function DashboardPage() {
 
       {/* 보조 지표 */}
       <div className="mt-3 grid grid-cols-3 gap-3">
-        {!hasData
+        {loading
+          ? [0, 1, 2].map((i) => (
+              <div key={i} className="rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                <div className="animate-pulse space-y-2">
+                  <div className="h-3 w-16 rounded-md bg-[#F0F0F0]" />
+                  <div className="h-6 w-24 rounded-md bg-[#F0F0F0]" />
+                </div>
+              </div>
+            ))
+          : !hasData
           ? ["자기자본비율", "월소득", "월잉여금"].map((label) => (
               <div key={label} className="rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
                 <p className="text-xs font-medium text-[#8b95a1]">{label}</p>
-                <p className="mt-2 text-[22px] font-bold text-[#e5e8eb]">{loading ? "..." : "—"}</p>
+                <p className="mt-2 text-[22px] font-bold text-[#e5e8eb]">—</p>
               </div>
             ))
           : cardDefs!.slice(1).map(({ label, curr, prevVal, display, isRatio }) => {
@@ -318,21 +332,19 @@ export default function DashboardPage() {
                 </span>
               </div>
             </>
+          ) : loading ? (
+            <div className="mt-3 animate-pulse space-y-3">
+              <div className="h-[220px] rounded-lg bg-[#F0F0F0]" />
+            </div>
           ) : (
             <div className="mt-4 flex h-44 flex-col items-center justify-center gap-3">
-              {loading ? (
-                <span className="text-sm text-[#D0D0D0]">불러오는 중...</span>
-              ) : (
-                <>
-                  <p className="text-sm text-[#8b95a1]">아직 입력된 스냅샷이 없어요.</p>
-                  <Link
-                    href="/snapshot/new"
-                    className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-                  >
-                    첫 스냅샷 입력하기
-                  </Link>
-                </>
-              )}
+              <p className="text-sm text-[#8b95a1]">아직 입력된 스냅샷이 없어요.</p>
+              <Link
+                href="/snapshot/new"
+                className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                첫 스냅샷 입력하기
+              </Link>
             </div>
           )}
         </div>
@@ -384,9 +396,19 @@ export default function DashboardPage() {
                 ))}
               </div>
             </>
+          ) : loading ? (
+            <div className="mt-3 animate-pulse space-y-2">
+              <div className="mx-auto h-[160px] w-[160px] rounded-full bg-[#F0F0F0]" />
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="h-3 w-20 rounded-md bg-[#F0F0F0]" />
+                  <div className="h-3 w-12 rounded-md bg-[#F0F0F0]" />
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="mt-4 flex h-40 items-center justify-center text-sm text-[#D0D0D0]">
-              {loading ? "불러오는 중..." : "스냅샷 데이터 없음"}
+              스냅샷 데이터 없음
             </div>
           )}
         </div>

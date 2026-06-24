@@ -75,7 +75,23 @@ export default function HistoryPage() {
       </div>
 
       <div className="mt-6 space-y-3">
-        {loading && <p className="text-sm text-gray-400">불러오는 중...</p>}
+        {loading &&
+          [0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center justify-between rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+              <div className="animate-pulse space-y-2">
+                <div className="h-4 w-24 rounded-md bg-[#F0F0F0]" />
+                <div className="flex gap-4">
+                  <div className="h-3 w-28 rounded-md bg-[#F0F0F0]" />
+                  <div className="h-3 w-20 rounded-md bg-[#F0F0F0]" />
+                  <div className="h-3 w-16 rounded-md bg-[#F0F0F0]" />
+                </div>
+              </div>
+              <div className="flex animate-pulse gap-2">
+                <div className="h-7 w-20 rounded-xl bg-[#F0F0F0]" />
+                <div className="h-7 w-14 rounded-xl bg-[#F0F0F0]" />
+              </div>
+            </div>
+          ))}
         {!loading && snapshots.length === 0 && (
           <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
             <p className="text-sm text-[#8b95a1]">아직 스냅샷이 없어요.</p>
