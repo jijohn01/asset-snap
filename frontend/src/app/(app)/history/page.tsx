@@ -27,6 +27,7 @@ export default function HistoryPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useEffect(() => {
     function load() {
@@ -43,8 +44,12 @@ export default function HistoryPage() {
     return () => window.removeEventListener("group-changed", load);
   }, []);
 
-  async function handleDelete(id: string) {
-    if (!confirm("이 스냅샷을 삭제할까요?")) return;
+  function requestDelete(id: string) {
+    setConfirmingId(id);
+  }
+
+  async function confirmDelete(id: string) {
+    setConfirmingId(null);
     setDeletingId(id);
     try {
       await deleteSnapshot(id);
@@ -113,15 +118,39 @@ export default function HistoryPage() {
                   <Pencil size={13} />
                   보기 / 수정
                 </Link>
-                <button
-                  type="button"
-                  disabled={deletingId === s.id}
-                  onClick={() => handleDelete(s.id)}
-                  className="flex items-center gap-1.5 rounded-xl bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] transition-colors disabled:opacity-50"
-                >
-                  <Trash2 size={13} />
-                  삭제
-                </button>
+
+                {confirmingId === s.id ? (
+                  <>
+                    <span className="text-xs text-[#4e5968]">정말 삭제할까요?</span>
+                    <button
+                      type="button"
+                      data-testid="confirm-delete"
+                      disabled={deletingId === s.id}
+                      onClick={() => confirmDelete(s.id)}
+                      className="flex items-center gap-1.5 rounded-xl bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] transition-colors disabled:opacity-50"
+                    >
+                      삭제
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="confirm-cancel"
+                      onClick={() => setConfirmingId(null)}
+                      className="flex items-center gap-1.5 rounded-xl bg-[#f2f4f6] px-3 py-1.5 text-xs font-medium text-[#4e5968] hover:bg-[#e8ecf0] transition-colors"
+                    >
+                      취소
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={deletingId === s.id}
+                    onClick={() => requestDelete(s.id)}
+                    className="flex items-center gap-1.5 rounded-xl bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 size={13} />
+                    삭제
+                  </button>
+                )}
               </div>
             </div>
           );
