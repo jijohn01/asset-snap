@@ -104,8 +104,8 @@ const [transferLoading, setTransferLoading] = useState(false);
 │ OOO님이 이 장부의 새 owner가 되고,               │
 │ 나는 editor로 변경됩니다.                        │
 │                                                 │
-│ 계속하려면 아래에 닉네임을 입력하세요:            │
-│ [    OOO 입력    ]                              │
+│ 계속하려면 아래에 `OOO` 을(를) 입력하세요:       │
+│ [               ]                               │
 │                                                 │
 │ [소유권 이전]  [취소]                            │
 │  (입력 일치 전 비활성화)                         │
@@ -113,6 +113,7 @@ const [transferLoading, setTransferLoading] = useState(false);
 ```
 
 - 경고 문구는 `text-[#f04452]` 계열로 강조
+- 안내 문구에 `m.display_name`을 **코드 블록 스타일** (`font-mono`, 배경 강조)로 표시해 사용자가 무엇을 입력해야 하는지 바로 알 수 있게 함
 - 입력값이 `m.display_name`과 정확히 일치할 때만 [소유권 이전] 버튼 활성화
 - [소유권 이전] 클릭 → `transferOwnership()` 호출, 성공 시 state 업데이트
 - [취소] 클릭 → `setTransferringTo(null)`, `setTransferConfirmInput("")`
