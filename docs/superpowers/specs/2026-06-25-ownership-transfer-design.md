@@ -104,8 +104,9 @@ const [transferLoading, setTransferLoading] = useState(false);
 │ OOO님이 이 장부의 새 owner가 되고,               │
 │ 나는 editor로 변경됩니다.                        │
 │                                                 │
-│ 계속하려면 아래에 `OOO` 을(를) 입력하세요:       │
-│ [               ]                               │
+│ 아래 문장을 그대로 입력하세요:                    │
+│ `나는 [장부명]의 소유권을 OOO에게 이전합니다`     │
+│ [                                   ]           │
 │                                                 │
 │ [소유권 이전]  [취소]                            │
 │  (입력 일치 전 비활성화)                         │
@@ -113,8 +114,10 @@ const [transferLoading, setTransferLoading] = useState(false);
 ```
 
 - 경고 문구는 `text-[#f04452]` 계열로 강조
-- 안내 문구에 `m.display_name`을 **코드 블록 스타일** (`font-mono`, 배경 강조)로 표시해 사용자가 무엇을 입력해야 하는지 바로 알 수 있게 함
-- 입력값이 `m.display_name`과 정확히 일치할 때만 [소유권 이전] 버튼 활성화
+- 입력해야 할 문장을 코드 블록 스타일(`font-mono`, 배경 강조)로 표시:
+  - 형식: `나는 {group.name}의 소유권을 {m.display_name}에게 이전합니다`
+  - 장부명·닉네임이 문장 안에 포함되므로 사용자가 무엇을 확인하는지 명확히 인지
+- 입력값이 해당 문장과 정확히 일치할 때만 [소유권 이전] 버튼 활성화
 - [소유권 이전] 클릭 → `transferOwnership()` 호출, 성공 시 state 업데이트
 - [취소] 클릭 → `setTransferringTo(null)`, `setTransferConfirmInput("")`
 
@@ -139,9 +142,10 @@ const [transferLoading, setTransferLoading] = useState(false);
   → 해당 멤버 행: 경고 UI로 전환
       ⚠ "소유권을 이전하면 되돌릴 수 없습니다."
          "OOO님이 새 owner가 되고, 나는 editor로 변경됩니다."
-      입력창: "계속하려면 닉네임을 입력하세요"
+      확인 문장 표시: `나는 [장부명]의 소유권을 OOO에게 이전합니다`
+      입력창: 해당 문장을 그대로 입력
       [소유권 이전 (비활성)] [취소]
-  → 닉네임 정확히 입력 시 [소유권 이전] 활성화
+  → 문장 정확히 입력 시 [소유권 이전] 활성화
   → [소유권 이전]: POST /transfer-ownership
       성공 → state 업데이트, 카드 role 배지 editor로 변경, 멤버 관리 숨김
       실패 → 경고 UI 유지, 에러 메시지 표시
