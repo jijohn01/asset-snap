@@ -3,6 +3,7 @@ from app.api.deps import get_current_user
 from app.models.asset_group import (
     AssetGroupCreate, AssetGroupUpdate, AssetGroupResponse,
     MemberInvite, MemberRoleUpdate, MemberResponse,
+    OwnershipTransferRequest,
 )
 from app.db import supabase as db
 
@@ -94,6 +95,19 @@ def remove_member(
 ):
     _require_role(group_id, user_id, "owner")
     db.remove_member(group_id, target_user_id)
+
+
+@router.post("/{group_id}/transfer-ownership", status_code=204)
+def transfer_ownership_endpoint(
+    group_id: str,
+    body: OwnershipTransferRequest,
+    user_id: str = Depends(get_current_user),
+):
+    _require_role(group_id, user_id, "owner")
+    try:
+        db.transfer_ownership(group_id, body.target_user_id, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 def _flatten_member(row: dict) -> dict:

@@ -11,6 +11,7 @@ import {
   inviteMember,
   updateMemberRole,
   removeMember,
+  transferOwnership,
   setActiveGroupId,
   type Group,
   type Member,
@@ -49,6 +50,13 @@ export default function SettingsPage() {
   const [inviteError, setInviteError] = useState<Record<string, string>>({});
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [transferringTo, setTransferringTo] = useState<{
+    groupId: string;
+    userId: string;
+  } | null>(null);
+  const [transferConfirmInput, setTransferConfirmInput] = useState("");
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferError, setTransferError] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -118,6 +126,12 @@ export default function SettingsPage() {
   }
 
   async function handleRoleChange(groupId: string, userId: string, role: string) {
+    if (role === "owner") {
+      setTransferringTo({ groupId, userId });
+      setTransferConfirmInput("");
+      setTransferError("");
+      return;
+    }
     await updateMemberRole(groupId, userId, role);
     setMembersByGroup((prev) => ({
       ...prev,
@@ -125,6 +139,29 @@ export default function SettingsPage() {
         m.user_id === userId ? { ...m, role } : m
       ),
     }));
+  }
+
+  async function handleTransferOwnership(group: Group, targetMember: Member) {
+    setTransferLoading(true);
+    setTransferError("");
+    try {
+      await transferOwnership(group.id, targetMember.user_id);
+      setMembersByGroup((prev) => ({
+        ...prev,
+        [group.id]: (prev[group.id] ?? []).map((m) =>
+          m.user_id === targetMember.user_id ? { ...m, role: "owner" } : m
+        ),
+      }));
+      setGroups((prev) =>
+        prev.map((g) => g.id === group.id ? { ...g, role: "editor" } : g)
+      );
+      setTransferringTo(null);
+      setTransferConfirmInput("");
+    } catch (e) {
+      setTransferError((e as Error).message);
+    } finally {
+      setTransferLoading(false);
+    }
   }
 
   async function handleRemoveMember(groupId: string, userId: string) {
@@ -284,23 +321,71 @@ export default function SettingsPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             {m.user_id !== currentUserId ? (
-                              <>
-                                <select
-                                  value={m.role}
-                                  onChange={(e) => handleRoleChange(group.id, m.user_id, e.target.value)}
-                                  className="rounded-lg border border-[#e5e8eb] bg-white px-2 py-1.5 text-xs text-[#4e5968] outline-none focus:border-[#3182f6] cursor-pointer"
-                                >
-                                  <option value="owner">owner</option>
-                                  <option value="editor">editor</option>
-                                  <option value="viewer">viewer</option>
-                                </select>
-                                <button
-                                  onClick={() => handleRemoveMember(group.id, m.user_id)}
-                                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] transition-colors"
-                                >
-                                  제거
-                                </button>
-                              </>
+                              transferringTo?.groupId === group.id && transferringTo?.userId === m.user_id ? (
+                                <div className="flex flex-col gap-2 py-1 w-full">
+                                  <p className="text-xs font-semibold text-[#f04452]">
+                                    소유권을 이전하면 되돌릴 수 없습니다.
+                                  </p>
+                                  <p className="text-xs text-[#4e5968]">
+                                    {m.display_name ?? "이 멤버"}님이 새 owner가 되고, 나는 editor로 변경됩니다.
+                                  </p>
+                                  <p className="mt-1 text-xs text-[#4e5968]">아래 문장을 그대로 입력하세요:</p>
+                                  <code className="block rounded-lg bg-[rgba(240,68,82,0.06)] px-3 py-2 text-xs font-mono text-[#f04452] break-all select-all">
+                                    {`나는 ${group.name} 장부의 소유권을 ${m.display_name ?? "알 수 없음"}에게 이전합니다`}
+                                  </code>
+                                  <input
+                                    type="text"
+                                    value={transferConfirmInput}
+                                    onChange={(e) => setTransferConfirmInput(e.target.value)}
+                                    placeholder="위 문장을 그대로 입력"
+                                    className="rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-3 py-2 text-xs text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#f04452] transition-colors"
+                                  />
+                                  {transferError && (
+                                    <p className="text-xs text-[#f04452]">{transferError}</p>
+                                  )}
+                                  <div className="flex gap-2 mt-1">
+                                    <button
+                                      onClick={() => handleTransferOwnership(group, m)}
+                                      disabled={
+                                        transferConfirmInput !==
+                                          `나는 ${group.name} 장부의 소유권을 ${m.display_name ?? "알 수 없음"}에게 이전합니다` ||
+                                        transferLoading
+                                      }
+                                      className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-[#f04452] hover:bg-[#d63b47] disabled:opacity-40 transition-colors"
+                                    >
+                                      {transferLoading ? "이전 중..." : "소유권 이전"}
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setTransferringTo(null);
+                                        setTransferConfirmInput("");
+                                        setTransferError("");
+                                      }}
+                                      className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#4e5968] bg-[#f2f4f6] hover:bg-[#e8ecf0] transition-colors"
+                                    >
+                                      취소
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <select
+                                    value={m.role}
+                                    onChange={(e) => handleRoleChange(group.id, m.user_id, e.target.value)}
+                                    className="rounded-lg border border-[#e5e8eb] bg-white px-2 py-1.5 text-xs text-[#4e5968] outline-none focus:border-[#3182f6] cursor-pointer"
+                                  >
+                                    {members.length > 1 && <option value="owner">owner</option>}
+                                    <option value="editor">editor</option>
+                                    <option value="viewer">viewer</option>
+                                  </select>
+                                  <button
+                                    onClick={() => handleRemoveMember(group.id, m.user_id)}
+                                    className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] transition-colors"
+                                  >
+                                    제거
+                                  </button>
+                                </>
+                              )
                             ) : (
                               <span className={`rounded-xl px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[m.role] ?? ROLE_BADGE.viewer}`}>
                                 {m.role}

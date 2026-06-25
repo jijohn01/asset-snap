@@ -35,3 +35,7 @@ class MemberInvite(BaseModel):
 
 class MemberRoleUpdate(BaseModel):
     role: str
+
+
+class OwnershipTransferRequest(BaseModel):
+    target_user_id: str
