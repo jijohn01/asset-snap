@@ -86,24 +86,41 @@ const [transferringTo, setTransferringTo] = useState<{
   groupId: string;
   userId: string;
 } | null>(null);
+const [transferConfirmInput, setTransferConfirmInput] = useState("");
+const [transferLoading, setTransferLoading] = useState(false);
 ```
 
 **드롭다운 `onChange` 수정:**
-- `owner` 선택 시: `setTransferringTo({ groupId, userId })`, select 값을 원래 role로 복원 (드롭다운은 변하지 않은 것처럼 보임)
+- `owner` 선택 시: `setTransferringTo({ groupId, userId })`, `setTransferConfirmInput("")`, select 값을 원래 role로 복원 (드롭다운은 변하지 않은 것처럼 보임)
 - 그 외: 기존 `handleRoleChange` 그대로
 
 **멤버 행 렌더링 수정:**
-- `transferringTo?.groupId === groupId && transferringTo?.userId === m.user_id` 이면 드롭다운+제거 버튼 대신 인라인 confirm UI 표시:
-  ```
-  "OOO님에게 소유권을 이전하면 나는 editor가 됩니다."  [확인]  [취소]
-  ```
-- [확인] 클릭 → `transferOwnership()` 호출, 성공 시 state 업데이트
-- [취소] 클릭 → `setTransferringTo(null)`
+
+`transferringTo?.groupId === groupId && transferringTo?.userId === m.user_id` 이면 드롭다운+제거 버튼 대신 인라인 경고 UI로 전환:
+
+```
+┌─────────────────────────────────────────────────┐
+│ ⚠ 소유권을 이전하면 되돌릴 수 없습니다.           │
+│ OOO님이 이 장부의 새 owner가 되고,               │
+│ 나는 editor로 변경됩니다.                        │
+│                                                 │
+│ 계속하려면 아래에 닉네임을 입력하세요:            │
+│ [    OOO 입력    ]                              │
+│                                                 │
+│ [소유권 이전]  [취소]                            │
+│  (입력 일치 전 비활성화)                         │
+└─────────────────────────────────────────────────┘
+```
+
+- 경고 문구는 `text-[#f04452]` 계열로 강조
+- 입력값이 `m.display_name`과 정확히 일치할 때만 [소유권 이전] 버튼 활성화
+- [소유권 이전] 클릭 → `transferOwnership()` 호출, 성공 시 state 업데이트
+- [취소] 클릭 → `setTransferringTo(null)`, `setTransferConfirmInput("")`
 
 **성공 시 로컬 state 업데이트:**
 1. `membersByGroup[groupId]`에서 target 멤버 role → `owner`
 2. `groups`에서 해당 그룹 role → `editor`
-3. `setTransferringTo(null)`
+3. `setTransferringTo(null)`, `setTransferConfirmInput("")`
 
 그룹 role이 `editor`로 바뀌면 `isOwner = false`가 되어 멤버 관리 섹션이 자동으로 숨겨짐.
 
@@ -118,13 +135,16 @@ const [transferringTo, setTransferringTo] = useState<{
 ```
 드롭다운에서 owner 선택
   → select 값 복원 (원래 role 유지)
-  → 해당 멤버 행: confirm UI로 전환
-      "OOO님에게 소유권을 이전하면 나는 editor가 됩니다."
-      [확인] [취소]
-  → [확인]: POST /transfer-ownership
+  → 해당 멤버 행: 경고 UI로 전환
+      ⚠ "소유권을 이전하면 되돌릴 수 없습니다."
+         "OOO님이 새 owner가 되고, 나는 editor로 변경됩니다."
+      입력창: "계속하려면 닉네임을 입력하세요"
+      [소유권 이전 (비활성)] [취소]
+  → 닉네임 정확히 입력 시 [소유권 이전] 활성화
+  → [소유권 이전]: POST /transfer-ownership
       성공 → state 업데이트, 카드 role 배지 editor로 변경, 멤버 관리 숨김
-      실패 → confirm UI 유지, 에러 메시지 표시
-  → [취소]: confirm UI 해제
+      실패 → 경고 UI 유지, 에러 메시지 표시
+  → [취소]: 경고 UI 해제, 입력값 초기화
 ```
 
 ---
@@ -137,4 +157,4 @@ const [transferringTo, setTransferringTo] = useState<{
 | `backend/app/db/supabase.py` | `transfer_ownership()` 함수 추가 |
 | `backend/app/api/v1/endpoints/asset_groups.py` | `POST /transfer-ownership` 엔드포인트 추가 |
 | `frontend/src/lib/api.ts` | `transferOwnership()` 함수 추가 |
-| `frontend/src/app/(app)/settings/page.tsx` | `transferringTo` state, 드롭다운 핸들러, confirm UI |
+| `frontend/src/app/(app)/settings/page.tsx` | `transferringTo` / `transferConfirmInput` / `transferLoading` state, 드롭다운 핸들러, 인라인 경고+입력 UI |
