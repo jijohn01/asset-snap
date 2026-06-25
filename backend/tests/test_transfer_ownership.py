@@ -49,7 +49,6 @@ def test_success_updates_both_roles(mock_supabase):
     transfer_ownership("group-1", "target-uuid", "caller-uuid")
 
     update_calls = mock_supabase.table.return_value.update.call_args_list
-    updated_roles = [c[0][0]["role"] for c in update_calls]
-    assert "owner" in updated_roles
-    assert "editor" in updated_roles
-    assert len(updated_roles) == 2
+    assert len(update_calls) == 2
+    assert update_calls[0][0][0] == {"role": "owner"}   # target gets owner first
+    assert update_calls[1][0][0] == {"role": "editor"}  # caller gets editor second
