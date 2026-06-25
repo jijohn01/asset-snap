@@ -123,6 +123,52 @@ def remove_member(group_id: str, user_id: str) -> None:
     )
 
 
+def transfer_ownership(group_id: str, target_user_id: str, caller_id: str) -> None:
+    if target_user_id == caller_id:
+        raise ValueError("self_transfer")
+
+    db = get_supabase()
+
+    res = (
+        db.table("asset_group_members")
+        .select("role")
+        .eq("group_id", group_id)
+        .eq("user_id", target_user_id)
+        .execute()
+    )
+    if not res.data:
+        raise ValueError("not_member")
+    if res.data[0]["role"] == "owner":
+        raise ValueError("already_owner")
+
+    target_prev_role = res.data[0]["role"]
+
+    (
+        db.table("asset_group_members")
+        .update({"role": "owner"})
+        .eq("group_id", group_id)
+        .eq("user_id", target_user_id)
+        .execute()
+    )
+    try:
+        (
+            db.table("asset_group_members")
+            .update({"role": "editor"})
+            .eq("group_id", group_id)
+            .eq("user_id", caller_id)
+            .execute()
+        )
+    except Exception:
+        (
+            db.table("asset_group_members")
+            .update({"role": target_prev_role})
+            .eq("group_id", group_id)
+            .eq("user_id", target_user_id)
+            .execute()
+        )
+        raise
+
+
 def get_user_id_by_email(email: str) -> str | None:
     db = get_supabase()
     users = db.auth.admin.list_users()
