@@ -159,13 +159,16 @@ def transfer_ownership(group_id: str, target_user_id: str, caller_id: str) -> No
             .execute()
         )
     except Exception:
-        (
-            db.table("asset_group_members")
-            .update({"role": target_prev_role})
-            .eq("group_id", group_id)
-            .eq("user_id", target_user_id)
-            .execute()
-        )
+        try:
+            (
+                db.table("asset_group_members")
+                .update({"role": target_prev_role})
+                .eq("group_id", group_id)
+                .eq("user_id", target_user_id)
+                .execute()
+            )
+        except Exception:
+            pass  # best-effort rollback; original exception propagates
         raise
 
 
