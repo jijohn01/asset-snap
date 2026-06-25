@@ -161,6 +161,18 @@ export async function removeMember(groupId: string, userId: string): Promise<voi
   });
 }
 
+export async function transferOwnership(groupId: string, targetUserId: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/transfer-ownership`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...await authHeader() },
+    body: JSON.stringify({ target_user_id: targetUserId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? "소유권 이전에 실패했습니다.");
+  }
+}
+
 // ── Snapshots ─────────────────────────────────────────────────
 export async function fetchSnapshots(): Promise<Snapshot[]> {
   const gid = await getDefaultGroupId();
