@@ -48,3 +48,5 @@ Run from `frontend/`:
   NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
   ```
 - **Worktree 주의:** `.env.local`은 gitignored라서 워크트리에 자동 복사 안 됨 — 수동 복사 필요.
+- **Playwright MCP 주의:** Chromium은 `localhost`를 IPv6(`::1`)로 해석하므로 `.env.local`의 `NEXT_PUBLIC_API_URL`을 `http://127.0.0.1:8000`으로 설정해야 연결됨 (`localhost:8000` 사용 시 `ERR_FAILED`).
+- **e2e 테스트:** `TEST_EMAIL` / `TEST_PASSWORD` 환경변수 미설정 시 로그인 필요 테스트가 skip됨. Supabase Admin API로 테스트 계정 생성 가능 (`email_confirm: true` 옵션 필수).
