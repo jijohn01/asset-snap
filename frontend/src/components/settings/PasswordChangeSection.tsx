@@ -36,7 +36,7 @@ export default function PasswordChangeSection({ email }: { email: string }) {
 
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
       if (updateError) {
-        setError(updateError.message);
+        setError(updateError.message || "비밀번호 변경에 실패했습니다");
         return;
       }
 
