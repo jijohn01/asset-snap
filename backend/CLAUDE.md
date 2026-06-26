@@ -13,7 +13,7 @@
 - `uv sync` — 초기 환경 설정 / 의존성 설치
 - `uv run uvicorn app.main:app --reload` — 개발 서버 시작 (http://localhost:8000)
 - 또는 루트에서 `scripts/dev.ps1` — 프론트엔드 + 백엔드 동시 실행 (별도 터미널)
-- `uv run pytest` — 테스트 실행 (`tests/test_health.py`, `test_auth.py`, `test_calculations.py`)
+- `uv run pytest` — 테스트 실행 (`tests/test_health.py`, `test_auth.py`, `test_calculations.py`, `test_transfer_ownership.py`)
 - 헬스 체크: `GET /health`
 
 ## API 구조
@@ -56,6 +56,7 @@ GET    /api/v1/asset-groups/{group_id}/members            멤버 목록
 POST   /api/v1/asset-groups/{group_id}/members            멤버 초대 (owner)
 PUT    /api/v1/asset-groups/{group_id}/members/{user_id}  역할 변경 (owner)
 DELETE /api/v1/asset-groups/{group_id}/members/{user_id}  멤버 제거 (owner)
+POST   /api/v1/asset-groups/{group_id}/transfer-ownership 소유권 이전 (owner → 멤버, 204)
 
 GET    /api/v1/asset-groups/{group_id}/snapshots/         스냅샷 목록 (최신순)
 POST   /api/v1/asset-groups/{group_id}/snapshots/         스냅샷 생성/수정 (upsert)

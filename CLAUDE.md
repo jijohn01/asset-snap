@@ -121,6 +121,7 @@ cd frontend && npm run test:e2e
 | `/history` | 월별 이력 목록 — 스냅샷 보기/수정/삭제, 전월 대비 순자산 증감(▲▼) 표시 |
 | `/snapshot/new` | 새 스냅샷 입력 — 엑셀 스타일 2열 그리드, 직전 스냅샷 금액으로 미리채움 |
 | `/snapshot/[id]` | 기존 스냅샷 수정/삭제 |
+| `/settings` | 프로필 닉네임 수정, 장부 관리(생성/이름변경), 멤버 초대/역할변경/제거, 소유권 이전 |
 
 `/login`, `/signup` 외 모든 라우트는 `middleware.ts`가 미인증 시 `/login`으로 리다이렉트.
 
@@ -149,6 +150,9 @@ user_items: 사용자 정의 항목 목록 (category, label, sort_order, memo)
 
 ```bash
 git worktree add ../AssetNavigator-<slug> -b <branch>
+# gitignored 파일 수동 복사 필수
+cp backend/.env ../AssetNavigator-<slug>/backend/.env
+cp frontend/.env.local ../AssetNavigator-<slug>/frontend/.env.local
 ```
 
 - 작업은 `../AssetNavigator-<slug>` 경로에서만 진행. 메인 디렉터리(`AssetNavigator/`) 파일을 직접 수정하지 않는다.
@@ -168,7 +172,10 @@ git worktree add ../AssetNavigator-<slug> -b <branch>
 git push -u origin <branch>
 gh pr create ...
 # PR 머지 후
+git pull
 git worktree remove ../AssetNavigator-<slug>
+git branch -d <branch>
+git worktree prune
 ```
 
 ### 예외
