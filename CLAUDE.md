@@ -140,7 +140,7 @@ user_items: 사용자 정의 항목 목록 (category, label, sort_order, memo)
 
 - `frontend/src/lib/colors.ts` — JS 상수 (recharts 등 JS에서 hex 직접 사용)
 - `frontend/src/app/globals.css` — `@theme` 블록: CSS vars → Tailwind utility 자동 생성 (`--color-primary-500` → `bg-primary-500`)
-- 토스 팔레트: primary `#3182F6`, positive `#00B493`, negative `#F04452`
+- 토스 팔레트: primary `#3182F6`, positive `#03b26c`, negative `#F04452`
 
 ## 6. Worktree Policy
 

@@ -698,17 +698,98 @@ not documented Toss statements.
 
 ---
 
+## 16. GETDON Project Branding
+
+This project uses the Toss Design System as its visual foundation but has its own brand identity: **GETDON**.
+
+### Service Name
+
+**GETDON** — Get + 돈(money), with a deliberate echo of **곗돈** (gyetdon, traditional Korean communal savings). The name works on three levels: financial action (get money), Korean cultural resonance (pooling money together), and the group-ledger feature already built into the product.
+
+### Font
+
+**Pretendard Variable** — substitutes Toss Product Sans throughout the project. Shares the same weight axis (300–900) and Korean-Latin optical balance. Use the `font-sans` utility (configured in `globals.css`).
+
+Toss Product Sans is proprietary; Pretendard is the closest open-source equivalent used in Korean fintech products. All Toss typography rules (weights 400/600/700, tabular numerals for amounts) apply unchanged.
+
+### Wordmark
+
+Color-split wordmark — no symbol, no icon. Two spans, two colors.
+
+```
+GET  DON
+───  ───
+#3182f6  #191f28
+```
+
+| Part | Color | Token |
+|---|---|---|
+| `GET` | `#3182f6` | `text-primary-500` |
+| `DON` | `#191f28` | `text-ink` |
+
+- Weight: `font-bold` (700)
+- Case: always uppercase (`GETDON`, never `Getdon`)
+- Font: Pretendard Variable
+- Letter-spacing: default (no manual tracking)
+
+**Implementation pattern:**
+```tsx
+<span className="font-bold text-primary-500">GET</span>
+<span className="font-bold text-ink">DON</span>
+```
+
+### Usage by Surface
+
+| Surface | Size | Notes |
+|---|---|---|
+| Topbar (nav) | `text-lg` (18px) | Shrink-0, hover opacity 75% |
+| Login / Signup hero | `text-3xl` (30px) | Above the auth card, centered |
+| Browser tab / metadata | Plain text `GETDON` | No color split in `<title>` |
+
+### What NOT to Do
+
+- Do not add a graphic symbol or icon mark — wordmark only
+- Do not use `GET` and `DON` as separate words with a space — always `GETDON`
+- Do not apply any color other than `#3182f6` / `#191f28` to the wordmark
+- Do not use lowercase
+
+### Role Badges
+
+Group member roles use a consistent color system across the settings page.
+
+| Role | Badge bg | Badge text | Left border |
+|------|----------|------------|-------------|
+| `owner` | `rgba(100,168,255,0.15)` | `#2272eb` | `#3182f6` |
+| `editor` | `rgba(3,178,108,0.15)` | `#03b26c` | `#03b26c` |
+| `viewer` | `rgba(2,32,71,0.05)` | `#4e5968` | `#e5e8eb` |
+
+Implementation: `src/app/(app)/settings/page.tsx` — `ROLE_BADGE` and `ROLE_LEFT_BORDER` constants.
+
+### Inline Destructive Confirmation Pattern
+
+Used for irreversible actions (snapshot deletion, ownership transfer). **Never use a modal dialog** — the action row itself transforms into the confirmation UI.
+
+**Pattern:**
+1. User triggers action (clicks delete / selects "owner" in dropdown)
+2. The row expands in-place to show:
+   - Warning text in `#f04452` (red)
+   - Exact sentence the user must type (displayed in `<code>` / monospace block)
+   - Text input — action button disabled until input matches exactly
+   - Cancel button restores the original row
+3. On confirm: optimistic state update, then API call
+
+**Confirm sentence format:** `나는 {대상명}의 소유권을 {멤버명}에게 이전합니다` (ownership) or action-specific equivalent. The sentence embeds the specific target so the user cannot copy-paste without reading.
+
+---
+
 ## Included Components
 
-The following components are part of this design system:
-
-- Button
-- Input
-- Table
-- Card
-- Badge
-- Tabs
-- Dialog
+| Component | Location | Notes |
+|-----------|----------|-------|
+| Color tokens | `src/lib/colors.ts` + `src/app/globals.css` | JS constants + CSS vars → Tailwind utilities |
+| SnapshotForm | `src/components/SnapshotForm.tsx` | Excel-style 2-column grid, shared between new/edit pages |
+| Sidebar | `src/components/layout/Sidebar.tsx` | Nav + group selector |
+| Settings page | `src/app/(app)/settings/page.tsx` | Role badges, inline confirmation UI |
 
 
 ---
