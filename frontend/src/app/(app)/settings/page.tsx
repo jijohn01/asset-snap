@@ -16,6 +16,7 @@ import {
   type Group,
   type Member,
 } from "@/lib/api";
+import PasswordChangeSection from "@/components/settings/PasswordChangeSection";
 
 const ROLE_LEFT_BORDER: Record<string, string> = {
   owner:  "#3182f6",
@@ -50,6 +51,8 @@ export default function SettingsPage() {
   const [inviteError, setInviteError] = useState<Record<string, string>>({});
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [hasEmailAuth, setHasEmailAuth] = useState(false);
   const [transferringTo, setTransferringTo] = useState<{
     groupId: string;
     userId: string;
@@ -63,6 +66,9 @@ export default function SettingsPage() {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
         setCurrentUserId(data.user.id);
+        setUserEmail(data.user.email ?? null);
+        const identities = data.user.identities ?? [];
+        setHasEmailAuth(identities.some((i) => i.provider === "email"));
         const { data: p } = await supabase
           .from("profiles")
           .select("display_name")
@@ -213,6 +219,10 @@ export default function SettingsPage() {
           </button>
         </div>
       </section>
+
+      {hasEmailAuth && userEmail && (
+        <PasswordChangeSection email={userEmail} />
+      )}
 
       {/* ── 내 장부 ── */}
       <section>
