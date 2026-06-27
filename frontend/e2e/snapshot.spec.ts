@@ -109,7 +109,7 @@ test.describe("스냅샷 CRUD (#54)", () => {
     await page.click('button:text("수정 저장")');
     await page.waitForURL("/history", { timeout: 8000 });
     // 수정된 순자산(9,000만원)이 히스토리에 표시되어야 함
-    await expect(page.getByText(/9,000만원/)).toBeVisible();
+    await expect(page.getByText("순자산 9,000만원")).toBeVisible();
   });
 
   test("스냅샷 삭제 → 인라인 확인 후 히스토리에서 제거", async ({ page }) => {
