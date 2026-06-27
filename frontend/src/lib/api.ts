@@ -61,7 +61,12 @@ async function authHeader(): Promise<Record<string, string>> {
 }
 
 async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(url, init);
+  let res: Response;
+  try {
+    res = await fetch(url, init);
+  } catch {
+    throw new Error("서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  }
   if (res.status === 401 && typeof window !== "undefined") {
     window.location.href = "/login";
   }
