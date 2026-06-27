@@ -38,6 +38,35 @@ test.describe("대시보드", () => {
   });
 });
 
+test.describe("대시보드 에러 상태 (#51)", () => {
+  test("API 에러 시 에러 배너 표시", async ({ page }) => {
+    if (!PASSWORD) test.skip();
+    await page.route("**/api/v1/asset-groups/", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MOCK_GROUP) })
+    );
+    await page.route("**/api/v1/asset-groups/g1/snapshots/", (route) =>
+      route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ detail: "서버 오류" }) })
+    );
+    await login(page);
+
+    await expect(page.getByText("스냅샷 목록을 불러오지 못했습니다.")).toBeVisible({ timeout: 5000 });
+  });
+
+  test("API 에러 시 '첫 스냅샷 입력하기' CTA 미표시", async ({ page }) => {
+    if (!PASSWORD) test.skip();
+    await page.route("**/api/v1/asset-groups/", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MOCK_GROUP) })
+    );
+    await page.route("**/api/v1/asset-groups/g1/snapshots/", (route) =>
+      route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ detail: "서버 오류" }) })
+    );
+    await login(page);
+
+    await expect(page.getByText("스냅샷 목록을 불러오지 못했습니다.")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("link", { name: "첫 스냅샷 입력하기" })).not.toBeVisible();
+  });
+});
+
 test.describe("대시보드 차트 크기 및 empty state (#39)", () => {
   test("데이터 없을 때 '첫 스냅샷 입력하기' 버튼 표시 및 /snapshot/new 링크 확인", async ({ page }) => {
     if (!PASSWORD) test.skip();

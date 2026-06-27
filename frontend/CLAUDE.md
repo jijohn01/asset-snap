@@ -50,3 +50,35 @@ Run from `frontend/`:
 - **Worktree 주의:** `.env.local`은 gitignored라서 워크트리에 자동 복사 안 됨 — 수동 복사 필요.
 - **Playwright MCP 주의:** Chromium은 `localhost`를 IPv6(`::1`)로 해석하므로 `.env.local`의 `NEXT_PUBLIC_API_URL`을 `http://127.0.0.1:8000`으로 설정해야 연결됨 (`localhost:8000` 사용 시 `ERR_FAILED`).
 - **e2e 테스트:** `TEST_EMAIL` / `TEST_PASSWORD` 환경변수 미설정 시 로그인 필요 테스트가 skip됨. Supabase Admin API로 테스트 계정 생성 가능 (`email_confirm: true` 옵션 필수).
+
+## E2E 테스트 패턴
+
+새 페이지나 기능 구현 시 PR 테스트 플랜의 각 항목을 `e2e/` 에 Playwright 테스트로 추가한다.
+
+### API mock 패턴
+
+```typescript
+// 성공 응답
+await page.route("**/api/v1/asset-groups/g1/snapshots/", (route) =>
+  route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(data) })
+);
+
+// 에러 응답 (500 mock으로 백엔드 미실행 시나리오 재현)
+await page.route("**/api/v1/asset-groups/g1/snapshots/", (route) =>
+  route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ detail: "서버 오류" }) })
+);
+```
+
+- 항상 groups 엔드포인트(`**/api/v1/asset-groups/`)도 함께 mock — `fetchSnapshots()`가 내부적으로 `getDefaultGroupId()`를 호출하기 때문.
+- route mock은 `login()` 호출 전에 설정해야 적용됨.
+- 다른 페이지로 이동 후에도 같은 page context의 mock은 유지됨.
+
+### 에러/빈 상태 구분 검증 체크리스트
+
+| 시나리오 | 확인 사항 |
+|----------|-----------|
+| API 500 에러 | 에러 메시지 표시 확인 |
+| API 500 에러 | "아직 스냅샷이 없어요." 같은 빈 상태 문구 **미표시** 확인 |
+| API 500 에러 | "첫 스냅샷 입력하기" 같은 CTA **미표시** 확인 |
+| 데이터 0건 (정상) | 빈 상태 문구 및 CTA 표시 확인 |
+| 데이터 있음 | 실제 데이터 렌더링 확인, 빈 상태 문구 미표시 확인 |
