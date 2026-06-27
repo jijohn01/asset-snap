@@ -26,17 +26,19 @@ function fmtMonth(iso: string) {
 export default function HistoryPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   useEffect(() => {
     function load() {
       setLoading(true);
+      setError(null);
       fetchSnapshots()
         .then((data) =>
           setSnapshots(data.sort((a, b) => b.snapshot_month.localeCompare(a.snapshot_month)))
         )
-        .catch(() => {})
+        .catch((e) => setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다."))
         .finally(() => setLoading(false));
     }
     load();
@@ -54,6 +56,8 @@ export default function HistoryPage() {
     try {
       await deleteSnapshot(id);
       setSnapshots((prev) => prev.filter((s) => s.id !== id));
+    } catch {
+      setError("삭제에 실패했습니다.");
     } finally {
       setDeletingId(null);
     }
@@ -92,7 +96,12 @@ export default function HistoryPage() {
               </div>
             </div>
           ))}
-        {!loading && snapshots.length === 0 && (
+        {!loading && error && (
+          <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+            <p className="text-sm text-[#F04452]">{error}</p>
+          </div>
+        )}
+        {!loading && !error && snapshots.length === 0 && (
           <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
             <p className="text-sm text-[#8b95a1]">아직 스냅샷이 없어요.</p>
             <Link href="/snapshot/new" className="mt-2 inline-block text-sm text-primary-500 hover:underline">

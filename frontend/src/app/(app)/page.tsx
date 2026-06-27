@@ -119,6 +119,7 @@ function DiffBadge({ amount, pct, isRatio }: { amount: number; pct: number; isRa
 export default function DashboardPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
 
   useEffect(() => {
@@ -132,12 +133,13 @@ export default function DashboardPage() {
 
     function load() {
       setLoading(true);
+      setError(null);
       loadGroup();
       fetchSnapshots()
         .then((data) =>
           setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
         )
-        .catch(() => {})
+        .catch((e) => setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다."))
         .finally(() => setLoading(false));
     }
     load();
@@ -200,6 +202,12 @@ export default function DashboardPage() {
           style={{ background: "rgba(100,168,255,0.15)", color: "#2272eb" }}>
           {activeGroup.type === "group" ? <Users size={11} /> : <User size={11} />}
           {activeGroup.name}
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="mt-4 rounded-xl bg-[rgba(240,68,82,0.06)] px-4 py-3 text-sm text-[#F04452]">
+          {error}
         </div>
       )}
 
@@ -336,7 +344,7 @@ export default function DashboardPage() {
             <div className="mt-3 animate-pulse space-y-3">
               <div className="h-[220px] rounded-lg bg-[#F0F0F0]" />
             </div>
-          ) : (
+          ) : !error ? (
             <div className="mt-4 flex h-44 flex-col items-center justify-center gap-3">
               <p className="text-sm text-[#8b95a1]">아직 입력된 스냅샷이 없어요.</p>
               <Link
@@ -346,7 +354,7 @@ export default function DashboardPage() {
                 첫 스냅샷 입력하기
               </Link>
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="rounded-xl bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
@@ -406,11 +414,11 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : !error ? (
             <div className="mt-4 flex h-40 items-center justify-center text-sm text-[#D0D0D0]">
               스냅샷 데이터 없음
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

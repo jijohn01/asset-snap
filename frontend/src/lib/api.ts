@@ -60,6 +60,14 @@ async function authHeader(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(url, init);
+  if (res.status === 401 && typeof window !== "undefined") {
+    window.location.href = "/login";
+  }
+  return res;
+}
+
 // ── Active Group ──────────────────────────────────────────────
 let _groupId: string | null = null;
 
@@ -75,7 +83,7 @@ export function setActiveGroupId(id: string) {
 
 export async function getDefaultGroupId(): Promise<string> {
   if (_groupId) return _groupId;
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/`, {
     headers: await authHeader(),
   });
   if (!res.ok) throw new Error("장부를 불러오지 못했습니다.");
@@ -94,7 +102,7 @@ export async function getDefaultGroupId(): Promise<string> {
 // ── Groups ────────────────────────────────────────────────────
 
 export async function fetchGroups(): Promise<Group[]> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/`, {
     headers: await authHeader(),
   });
   if (!res.ok) throw new Error("장부 목록을 불러오지 못했습니다.");
@@ -102,7 +110,7 @@ export async function fetchGroups(): Promise<Group[]> {
 }
 
 export async function updateGroup(groupId: string, name: string): Promise<Group> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ name }),
@@ -112,7 +120,7 @@ export async function updateGroup(groupId: string, name: string): Promise<Group>
 }
 
 export async function createGroup(name: string, type: "personal" | "group"): Promise<Group> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ name, type }),
@@ -124,7 +132,7 @@ export async function createGroup(name: string, type: "personal" | "group"): Pro
 // ── Members ───────────────────────────────────────────────────
 
 export async function fetchGroupMembers(groupId: string): Promise<Member[]> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}/members`, {
     headers: await authHeader(),
   });
   if (!res.ok) throw new Error("멤버 목록을 불러오지 못했습니다.");
@@ -132,7 +140,7 @@ export async function fetchGroupMembers(groupId: string): Promise<Member[]> {
 }
 
 export async function inviteMember(groupId: string, email: string, role: string): Promise<Member> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}/members`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ email, role }),
@@ -145,7 +153,7 @@ export async function inviteMember(groupId: string, email: string, role: string)
 }
 
 export async function updateMemberRole(groupId: string, userId: string, role: string): Promise<Member> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members/${userId}`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}/members/${userId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ role }),
@@ -155,14 +163,14 @@ export async function updateMemberRole(groupId: string, userId: string, role: st
 }
 
 export async function removeMember(groupId: string, userId: string): Promise<void> {
-  await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/members/${userId}`, {
+  await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}/members/${userId}`, {
     method: "DELETE",
     headers: await authHeader(),
   });
 }
 
 export async function transferOwnership(groupId: string, targetUserId: string): Promise<void> {
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${groupId}/transfer-ownership`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}/transfer-ownership`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ target_user_id: targetUserId }),
@@ -176,7 +184,7 @@ export async function transferOwnership(groupId: string, targetUserId: string): 
 // ── Snapshots ─────────────────────────────────────────────────
 export async function fetchSnapshots(): Promise<Snapshot[]> {
   const gid = await getDefaultGroupId();
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/`, {
     headers: await authHeader(),
   });
   if (!res.ok) throw new Error("스냅샷 목록을 불러오지 못했습니다.");
@@ -185,7 +193,7 @@ export async function fetchSnapshots(): Promise<Snapshot[]> {
 
 export async function fetchSnapshot(snapshotId: string): Promise<Snapshot> {
   const gid = await getDefaultGroupId();
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`,
     { headers: await authHeader() },
   );
@@ -195,7 +203,7 @@ export async function fetchSnapshot(snapshotId: string): Promise<Snapshot> {
 
 export async function fetchPrefill(month: string): Promise<SnapshotData> {
   const gid = await getDefaultGroupId();
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_URL}/api/v1/asset-groups/${gid}/snapshots/prefill?month=${month}-01`,
     { headers: await authHeader() },
   );
@@ -208,7 +216,7 @@ export async function saveSnapshot(
   data: SnapshotData,
 ): Promise<Snapshot> {
   const gid = await getDefaultGroupId();
-  const res = await fetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/`, {
+  const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...await authHeader() },
     body: JSON.stringify({ snapshot_month: `${month}-01`, data }),
@@ -223,7 +231,7 @@ export async function updateSnapshot(
   data: SnapshotData,
 ): Promise<Snapshot> {
   const gid = await getDefaultGroupId();
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`,
     {
       method: "PUT",
@@ -237,7 +245,7 @@ export async function updateSnapshot(
 
 export async function deleteSnapshot(snapshotId: string): Promise<void> {
   const gid = await getDefaultGroupId();
-  await fetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`, {
+  await apiFetch(`${API_URL}/api/v1/asset-groups/${gid}/snapshots/${snapshotId}`, {
     method: "DELETE",
     headers: await authHeader(),
   });
