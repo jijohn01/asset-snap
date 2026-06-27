@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
-import { fetchSnapshots, deleteSnapshot, type Snapshot } from "@/lib/api";
+import { ChevronDown } from "lucide-react";
+import { fetchSnapshots, updateSnapshot, deleteSnapshot, type Snapshot, type SnapshotData } from "@/lib/api";
+import SnapshotForm from "@/components/SnapshotForm";
 
 function fmt(val: number) {
   return val.toLocaleString() + "만원";
@@ -27,8 +28,11 @@ export default function HistoryPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     function load() {
@@ -46,20 +50,40 @@ export default function HistoryPage() {
     return () => window.removeEventListener("group-changed", load);
   }, []);
 
-  function requestDelete(id: string) {
-    setConfirmingId(id);
+  function handleRowClick(id: string) {
+    setExpandedId((prev) => (prev === id ? null : id));
+    setFormError(null);
   }
 
-  async function confirmDelete(id: string) {
-    setConfirmingId(null);
-    setDeletingId(id);
+  async function handleSave(snapshotId: string, month: string, data: SnapshotData) {
+    setFormError(null);
+    setSubmitting(true);
+    try {
+      const updated = await updateSnapshot(snapshotId, month, data);
+      setSnapshots((prev) =>
+        prev
+          .map((s) => (s.id === snapshotId ? updated : s))
+          .sort((a, b) => b.snapshot_month.localeCompare(a.snapshot_month))
+      );
+      setExpandedId(null);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : "저장에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("이 스냅샷을 삭제할까요?")) return;
+    setDeleting(true);
     try {
       await deleteSnapshot(id);
       setSnapshots((prev) => prev.filter((s) => s.id !== id));
+      setExpandedId(null);
     } catch {
-      setError("삭제에 실패했습니다.");
+      setFormError("삭제에 실패했습니다.");
     } finally {
-      setDeletingId(null);
+      setDeleting(false);
     }
   }
 
@@ -81,7 +105,7 @@ export default function HistoryPage() {
       <div className="mt-6 space-y-3">
         {loading &&
           [0, 1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center justify-between rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+            <div key={i} className="rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
               <div className="animate-pulse space-y-2">
                 <div className="h-4 w-24 rounded-md bg-[#F0F0F0]" />
                 <div className="flex gap-4">
@@ -89,10 +113,6 @@ export default function HistoryPage() {
                   <div className="h-3 w-20 rounded-md bg-[#F0F0F0]" />
                   <div className="h-3 w-16 rounded-md bg-[#F0F0F0]" />
                 </div>
-              </div>
-              <div className="flex animate-pulse gap-2">
-                <div className="h-7 w-20 rounded-xl bg-[#F0F0F0]" />
-                <div className="h-7 w-14 rounded-xl bg-[#F0F0F0]" />
               </div>
             </div>
           ))}
@@ -111,71 +131,66 @@ export default function HistoryPage() {
         )}
         {snapshots.map((s, idx) => {
           const diffInfo = calcDiff(snapshots, idx);
+          const isExpanded = expandedId === s.id;
+          const month = s.snapshot_month.slice(0, 7);
+
           return (
             <div
               key={s.id}
-              className="flex items-center justify-between rounded-xl bg-white p-5 transition-colors hover:bg-[#f9fafb] shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+              className="rounded-xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden"
             >
-              <div>
-                <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
-                <div className="mt-1 flex gap-4 text-xs text-[#8b95a1]">
-                  <span>순자산 {fmt(s.metrics.net_worth)}</span>
-                  {diffInfo && (
-                    diffInfo.diff === 0 ? (
-                      <span className="text-gray-400">─ 변동없음</span>
-                    ) : (
-                      <span className={diffInfo.diff > 0 ? "text-positive" : "text-negative"}>
-                        {diffInfo.diff > 0 ? "▲" : "▼"} {fmt(Math.abs(diffInfo.diff))}
-                        {diffInfo.pct != null && ` (${Math.abs(diffInfo.pct).toFixed(1)}%)`}
-                      </span>
-                    )
-                  )}
-                  <span>자산 {fmt(s.metrics.total_assets)}</span>
-                  <span>부채 {fmt(s.metrics.total_liabilities)}</span>
-                  <span>월잉여금 {fmt(s.metrics.monthly_surplus)}</span>
+              <button
+                type="button"
+                onClick={() => handleRowClick(s.id)}
+                className="w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-[#f9fafb]"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
+                  <div className="mt-1 flex gap-4 text-xs text-[#8b95a1]">
+                    <span>순자산 {fmt(s.metrics.net_worth)}</span>
+                    {diffInfo && (
+                      diffInfo.diff === 0 ? (
+                        <span className="text-gray-400">─ 변동없음</span>
+                      ) : (
+                        <span className={diffInfo.diff > 0 ? "text-positive" : "text-negative"}>
+                          {diffInfo.diff > 0 ? "▲" : "▼"} {fmt(Math.abs(diffInfo.diff))}
+                          {diffInfo.pct != null && ` (${Math.abs(diffInfo.pct).toFixed(1)}%)`}
+                        </span>
+                      )
+                    )}
+                    <span>자산 {fmt(s.metrics.total_assets)}</span>
+                    <span>부채 {fmt(s.metrics.total_liabilities)}</span>
+                    <span>월잉여금 {fmt(s.metrics.monthly_surplus)}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/snapshot/${s.id}`}
-                  className="flex items-center gap-1.5 rounded-xl bg-[#f2f4f6] px-3 py-1.5 text-xs font-medium text-[#4e5968] hover:bg-[#e8ecf0] transition-colors"
-                >
-                  <Pencil size={13} />
-                  보기 / 수정
-                </Link>
+                <ChevronDown
+                  size={18}
+                  className={`shrink-0 text-[#8b95a1] transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`}
+                />
+              </button>
 
-                {confirmingId === s.id ? (
-                  <>
-                    <span className="text-xs text-[#4e5968]">정말 삭제할까요?</span>
-                    <button
-                      type="button"
-                      data-testid="confirm-delete"
-                      disabled={deletingId === s.id}
-                      onClick={() => confirmDelete(s.id)}
-                      className="flex items-center gap-1.5 rounded-xl bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] transition-colors disabled:opacity-50"
-                    >
-                      삭제
-                    </button>
-                    <button
-                      type="button"
-                      data-testid="confirm-cancel"
-                      onClick={() => setConfirmingId(null)}
-                      className="flex items-center gap-1.5 rounded-xl bg-[#f2f4f6] px-3 py-1.5 text-xs font-medium text-[#4e5968] hover:bg-[#e8ecf0] transition-colors"
-                    >
-                      취소
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    type="button"
-                    disabled={deletingId === s.id}
-                    onClick={() => requestDelete(s.id)}
-                    className="flex items-center gap-1.5 rounded-xl bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] transition-colors disabled:opacity-50"
-                  >
-                    <Trash2 size={13} />
-                    삭제
-                  </button>
-                )}
+              <div
+                className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+                  isExpanded ? "[grid-template-rows:1fr]" : "[grid-template-rows:0fr]"
+                }`}
+              >
+                <div className="overflow-hidden">
+                  <div className="border-t border-[#f2f4f6] p-5">
+                    {formError && isExpanded && (
+                      <p className="mb-4 text-sm text-[#F04452]">{formError}</p>
+                    )}
+                    <SnapshotForm
+                      initialMonth={month}
+                      initialData={s.data}
+                      saveLabel="수정 저장"
+                      submitting={submitting}
+                      deleting={deleting}
+                      error={null}
+                      onSave={(m, data) => handleSave(s.id, m, data)}
+                      onDelete={() => handleDelete(s.id)}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           );
