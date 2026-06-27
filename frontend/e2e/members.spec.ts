@@ -91,11 +91,12 @@ test.describe("멤버 관리 (#54)", () => {
 
     // 게스트 행의 역할 select를 viewer로 변경
     await page.waitForSelector('span:text-is("게스트")', { timeout: 5000 });
-    const guestRow = page.locator('div').filter({ hasText: /^게스트$/ }).filter({ has: page.locator('select') });
-    await guestRow.locator('select').selectOption("viewer");
+    // 멤버 역할 select (첫 번째) / 초대 역할 select (두 번째) 구분
+    const memberRoleSelect = page.locator('select').first();
+    await memberRoleSelect.selectOption("viewer");
 
     // 변경 후 select 값이 viewer로 유지되어야 함
-    await expect(guestRow.locator('select')).toHaveValue("viewer");
+    await expect(memberRoleSelect).toHaveValue("viewer");
   });
 
   test("멤버 제거", async ({ page }) => {
