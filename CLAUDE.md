@@ -111,6 +111,14 @@ cd backend && uv run pytest
 cd frontend && npm run test:e2e
 ```
 
+### 브라우저 검증 필수
+
+Playwright `page.route()` mock 테스트 통과 ≠ 완료. UI 기능을 구현했다면 반드시 실제 브라우저와 서버를 띄워서 확인한다.
+
+- 프론트 dev 서버(localhost:3000) + 백엔드를 실제로 실행해 동작 확인
+- 백엔드 다운 시나리오가 있으면 실제로 백엔드를 끈 상태에서 확인
+- Playwright MCP로 스크린샷 찍어 결과 공유
+
 ## Pages & Routes
 
 | Route | Description |
