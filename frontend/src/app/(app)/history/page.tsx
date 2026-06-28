@@ -176,15 +176,15 @@ export default function HistoryPage() {
                     <div className="flex gap-6 mb-5 text-sm">
                       <div>
                         <p className="text-xs text-[#8b95a1]">자산</p>
-                        <p className="font-medium text-[#191f28]">{fmt(s.metrics.total_assets)}</p>
+                        <p className="font-semibold text-primary-500">{fmt(s.metrics.total_assets)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-[#8b95a1]">부채</p>
-                        <p className="font-medium text-[#191f28]">{fmt(s.metrics.total_liabilities)}</p>
+                        <p className="font-semibold text-negative">{fmt(s.metrics.total_liabilities)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-[#8b95a1]">월잉여금</p>
-                        <p className="font-medium text-[#191f28]">{fmt(s.metrics.monthly_surplus)}</p>
+                        <p className="font-semibold text-positive">{fmt(s.metrics.monthly_surplus)}</p>
                       </div>
                     </div>
                     {formError && isExpanded && (
