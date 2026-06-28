@@ -198,7 +198,7 @@ export default function DashboardPage() {
         {latest ? `${latest.snapshot_month.slice(0, 7)} 스냅샷 기준` : "최신 스냅샷 기준"} 자산 현황
       </p>
       {activeGroup && (
-        <div className="mt-2 inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-xs font-bold"
+        <div className="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold"
           style={{ background: "rgba(100,168,255,0.15)", color: "#2272eb" }}>
           {activeGroup.type === "group" ? <Users size={11} /> : <User size={11} />}
           {activeGroup.name}
@@ -349,7 +349,7 @@ export default function DashboardPage() {
               <p className="text-sm text-[#8b95a1]">아직 입력된 스냅샷이 없어요.</p>
               <Link
                 href="/snapshot/new"
-                className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                className="rounded-xl bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] transition-all"
               >
                 첫 스냅샷 입력하기
               </Link>

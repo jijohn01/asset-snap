@@ -65,7 +65,7 @@ export default function PasswordChangeSection({ email }: { email: string }) {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="현재 비밀번호"
-            className="flex-1 max-w-xs rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+            className="flex-1 max-w-xs rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
           />
         </div>
         <div className="flex items-center gap-3">
@@ -75,7 +75,7 @@ export default function PasswordChangeSection({ email }: { email: string }) {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="8자 이상"
-            className="flex-1 max-w-xs rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+            className="flex-1 max-w-xs rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
           />
         </div>
         <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ export default function PasswordChangeSection({ email }: { email: string }) {
             onChange={(e) => setConfirmPassword(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             placeholder="새 비밀번호 재입력"
-            className="flex-1 max-w-xs rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+            className="flex-1 max-w-xs rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
           />
         </div>
         {error && <p className="text-xs text-[#f04452] pl-[108px]">{error}</p>}
@@ -94,7 +94,7 @@ export default function PasswordChangeSection({ email }: { email: string }) {
           <button
             onClick={handleSubmit}
             disabled={loading || !currentPassword || !newPassword || !confirmPassword}
-            className="rounded-2xl bg-[#3182f6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
+            className="rounded-2xl bg-[#3182f6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] disabled:opacity-40 transition-all"
           >
             {loading ? "변경 중" : "변경"}
           </button>

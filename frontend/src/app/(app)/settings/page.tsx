@@ -208,12 +208,12 @@ export default function SettingsPage() {
             onChange={(e) => setDisplayName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
             placeholder="닉네임 입력"
-            className="flex-1 max-w-xs rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+            className="flex-1 max-w-xs rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-3 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
           />
           <button
             onClick={handleSaveName}
             disabled={nameLoading}
-            className="rounded-2xl bg-[#3182f6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
+            className="rounded-2xl bg-[#3182f6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] disabled:opacity-40 transition-all"
           >
             {nameSaved ? "저장됨" : nameLoading ? "저장 중" : "저장"}
           </button>
@@ -258,12 +258,12 @@ export default function SettingsPage() {
                           if (e.key === "Enter") handleRenameGroup(group);
                           if (e.key === "Escape") setEditingGroupId(null);
                         }}
-                        className="rounded-lg border border-[#3182f6] px-2 py-1 text-sm font-semibold text-[#191f28] outline-none w-36"
+                        className="rounded-xl border border-[#3182f6] px-2 py-1 text-sm font-semibold text-[#191f28] outline-none w-36"
                       />
                     ) : (
                       <span className="font-semibold text-[#191f28] truncate">{group.name}</span>
                     )}
-                    <span className={`shrink-0 rounded-xl px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[group.role] ?? ROLE_BADGE.viewer}`}>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[group.role] ?? ROLE_BADGE.viewer}`}>
                       {group.role}
                     </span>
                   </div>
@@ -272,13 +272,13 @@ export default function SettingsPage() {
                       <>
                         <button
                           onClick={() => handleRenameGroup(group)}
-                          className="rounded-lg p-1.5 bg-[#3182f6] text-white hover:bg-[#2272eb] transition-colors"
+                          className="rounded-lg p-1.5 bg-[#3182f6] text-white hover:bg-[#2272eb] active:scale-[0.97] transition-all"
                         >
                           <Check size={12} />
                         </button>
                         <button
                           onClick={() => setEditingGroupId(null)}
-                          className="rounded-lg p-1.5 border border-[#e5e8eb] text-[#8b95a1] hover:bg-[#f2f4f6] transition-colors"
+                          className="rounded-lg p-1.5 border border-[#e5e8eb] text-[#8b95a1] hover:bg-[#f2f4f6] active:scale-[0.97] transition-all"
                         >
                           <X size={12} />
                         </button>
@@ -288,7 +288,7 @@ export default function SettingsPage() {
                         {isOwner && (
                           <button
                             onClick={() => { setEditingGroupId(group.id); setEditingGroupName(group.name); }}
-                            className="rounded-lg p-1.5 text-[#b0b8c1] hover:text-[#4e5968] hover:bg-[#f2f4f6] transition-colors"
+                            className="rounded-lg p-1.5 text-[#b0b8c1] hover:text-[#4e5968] hover:bg-[#f2f4f6] active:scale-[0.97] transition-all"
                             title="이름 변경"
                           >
                             <Pencil size={13} />
@@ -296,7 +296,7 @@ export default function SettingsPage() {
                         )}
                         <button
                           onClick={() => handleSwitchGroup(group)}
-                          className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#2272eb] bg-[rgba(100,168,255,0.15)] hover:bg-[rgba(100,168,255,0.25)] transition-colors"
+                          className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#2272eb] bg-[rgba(100,168,255,0.15)] hover:bg-[rgba(100,168,255,0.25)] active:scale-[0.97] transition-all"
                         >
                           보기
                         </button>
@@ -348,7 +348,7 @@ export default function SettingsPage() {
                                     value={transferConfirmInput}
                                     onChange={(e) => setTransferConfirmInput(e.target.value)}
                                     placeholder="위 문장을 그대로 입력"
-                                    className="rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-3 py-2 text-xs text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#f04452] transition-colors"
+                                    className="rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-3 py-2 text-xs text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#f04452] transition-colors"
                                   />
                                   {transferError && (
                                     <p className="text-xs text-[#f04452]">{transferError}</p>
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                                           `나는 ${group.name} 장부의 소유권을 ${m.display_name ?? "알 수 없음"}에게 이전합니다` ||
                                         transferLoading
                                       }
-                                      className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-[#f04452] hover:bg-[#d63b47] disabled:opacity-40 transition-colors"
+                                      className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-[#f04452] hover:bg-[#d63b47] active:scale-[0.97] disabled:opacity-40 transition-all"
                                     >
                                       {transferLoading ? "이전 중..." : "소유권 이전"}
                                     </button>
@@ -371,7 +371,7 @@ export default function SettingsPage() {
                                         setTransferConfirmInput("");
                                         setTransferError("");
                                       }}
-                                      className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#4e5968] bg-[#f2f4f6] hover:bg-[#e8ecf0] transition-colors"
+                                      className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#4e5968] bg-[#f2f4f6] hover:bg-[#e8ecf0] active:scale-[0.97] transition-all"
                                     >
                                       취소
                                     </button>
@@ -390,14 +390,14 @@ export default function SettingsPage() {
                                   </select>
                                   <button
                                     onClick={() => handleRemoveMember(group.id, m.user_id)}
-                                    className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] transition-colors"
+                                    className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] active:scale-[0.97] transition-all"
                                   >
                                     제거
                                   </button>
                                 </>
                               )
                             ) : (
-                              <span className={`rounded-xl px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[m.role] ?? ROLE_BADGE.viewer}`}>
+                              <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${ROLE_BADGE[m.role] ?? ROLE_BADGE.viewer}`}>
                                 {m.role}
                               </span>
                             )}
@@ -416,12 +416,12 @@ export default function SettingsPage() {
                           onChange={(e) => setInviteEmail((prev) => ({ ...prev, [group.id]: e.target.value }))}
                           onKeyDown={(e) => e.key === "Enter" && handleInvite(group.id)}
                           placeholder="이메일 주소"
-                          className="flex-1 rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-2.5 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+                          className="flex-1 rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-2.5 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
                         />
                         <select
                           value={inviteRole[group.id] ?? "editor"}
                           onChange={(e) => setInviteRole((prev) => ({ ...prev, [group.id]: e.target.value }))}
-                          className="rounded-[14px] border border-[rgba(2,32,71,0.05)] bg-[rgba(0,23,51,0.02)] px-3 py-2.5 text-sm text-[#4e5968] outline-none focus:border-[#3182f6] cursor-pointer"
+                          className="rounded-xl border border-[rgba(2,32,71,0.05)] bg-[rgba(0,23,51,0.02)] px-3 py-2.5 text-sm text-[#4e5968] outline-none focus:border-[#3182f6] cursor-pointer"
                         >
                           <option value="editor">editor</option>
                           <option value="viewer">viewer</option>
@@ -429,7 +429,7 @@ export default function SettingsPage() {
                         <button
                           onClick={() => handleInvite(group.id)}
                           disabled={inviteLoading[group.id]}
-                          className="rounded-2xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
+                          className="rounded-2xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] disabled:opacity-40 transition-all"
                         >
                           {inviteLoading[group.id] ? "..." : "초대"}
                         </button>
@@ -461,18 +461,18 @@ export default function SettingsPage() {
                   onKeyDown={(e) => e.key === "Enter" && handleCreateGroup()}
                   placeholder="장부 이름 (예: 우리 가족)"
                   autoFocus
-                  className="flex-1 rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-2.5 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
+                  className="flex-1 rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-4 py-2.5 text-sm text-[#333d4b] placeholder:text-[#b0b8c1] outline-none focus:border-[#3182f6] transition-colors"
                 />
                 <button
                   onClick={handleCreateGroup}
                   disabled={creatingGroup || !newGroupName.trim()}
-                  className="rounded-2xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
+                  className="rounded-2xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] disabled:opacity-40 transition-all"
                 >
                   {creatingGroup ? "생성 중" : "만들기"}
                 </button>
                 <button
                   onClick={() => { setShowNewGroupForm(false); setNewGroupName(""); }}
-                  className="rounded-2xl border border-[#e5e8eb] px-3 py-2.5 text-sm text-[#8b95a1] hover:bg-[#f2f4f6] transition-colors"
+                  className="rounded-2xl border border-[#e5e8eb] px-3 py-2.5 text-sm text-[#8b95a1] hover:bg-[#f2f4f6] active:scale-[0.97] transition-all"
                 >
                   <X size={14} />
                 </button>
@@ -481,7 +481,7 @@ export default function SettingsPage() {
           ) : (
             <button
               onClick={() => setShowNewGroupForm(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#e5e8eb] py-4 text-sm font-medium text-[#8b95a1] hover:border-[#3182f6] hover:text-[#2272eb] hover:bg-[rgba(100,168,255,0.05)] transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#e5e8eb] py-4 text-sm font-medium text-[#8b95a1] hover:border-[#3182f6] hover:text-[#2272eb] hover:bg-[rgba(100,168,255,0.05)] active:scale-[0.98] transition-all"
             >
               <Plus size={15} />
               새 가족 장부 만들기
