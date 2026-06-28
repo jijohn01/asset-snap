@@ -364,7 +364,7 @@ export default function SnapshotForm({
           type="month"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          className="rounded-[14px] bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-3 py-1.5 text-sm text-[#333d4b] focus:border-[#3182f6] focus:outline-none transition-colors"
+          className="rounded-xl bg-[rgba(0,23,51,0.02)] border border-[rgba(2,32,71,0.05)] px-3 py-1.5 text-sm text-[#333d4b] focus:border-[#3182f6] focus:outline-none transition-colors"
         />
       </div>
 
@@ -400,7 +400,7 @@ export default function SnapshotForm({
             type="button"
             onClick={onDelete}
             disabled={deleting}
-            className="rounded-2xl bg-[rgba(240,68,82,0.08)] px-4 py-2.5 text-sm font-semibold text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] disabled:opacity-40 transition-colors"
+            className="rounded-2xl bg-[rgba(240,68,82,0.08)] px-4 py-2.5 text-sm font-semibold text-[#f04452] hover:bg-[rgba(240,68,82,0.15)] active:scale-[0.97] disabled:opacity-40 transition-all"
           >
             {deleting ? "삭제 중..." : "스냅샷 삭제"}
           </button>
@@ -411,7 +411,7 @@ export default function SnapshotForm({
           type="button"
           onClick={handleSave}
           disabled={submitting}
-          className="rounded-2xl bg-[#3182f6] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] disabled:opacity-40 transition-colors"
+          className="rounded-2xl bg-[#3182f6] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] disabled:opacity-40 transition-all"
         >
           {submitting ? "저장 중..." : saveLabel}
         </button>

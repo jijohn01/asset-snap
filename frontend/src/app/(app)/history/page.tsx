@@ -96,7 +96,7 @@ export default function HistoryPage() {
         </div>
         <Link
           href="/snapshot/new"
-          className="rounded-xl bg-[#3182f6] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2272eb] transition-colors"
+          className="rounded-xl bg-[#3182f6] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] transition-all"
         >
           + 새 스냅샷
         </Link>
