@@ -146,21 +146,18 @@ export default function HistoryPage() {
               >
                 <div>
                   <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
-                  <div className="mt-1 flex gap-4 text-xs text-[#8b95a1]">
-                    <span>순자산 {fmt(s.metrics.net_worth)}</span>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[#191f28]">순자산 {fmt(s.metrics.net_worth)}</span>
                     {diffInfo && (
                       diffInfo.diff === 0 ? (
-                        <span className="text-gray-400">─ 변동없음</span>
+                        <span className="text-xs text-[#b0b8c1]">변동없음</span>
                       ) : (
-                        <span className={diffInfo.diff > 0 ? "text-positive" : "text-negative"}>
+                        <span className={`text-xs font-medium ${diffInfo.diff > 0 ? "text-positive" : "text-negative"}`}>
                           {diffInfo.diff > 0 ? "▲" : "▼"} {fmt(Math.abs(diffInfo.diff))}
                           {diffInfo.pct != null && ` (${Math.abs(diffInfo.pct).toFixed(1)}%)`}
                         </span>
                       )
                     )}
-                    <span>자산 {fmt(s.metrics.total_assets)}</span>
-                    <span>부채 {fmt(s.metrics.total_liabilities)}</span>
-                    <span>월잉여금 {fmt(s.metrics.monthly_surplus)}</span>
                   </div>
                 </div>
                 <ChevronDown
@@ -176,6 +173,20 @@ export default function HistoryPage() {
               >
                 <div className="overflow-hidden">
                   <div className="border-t border-[#f2f4f6] p-5">
+                    <div className="flex gap-6 mb-5 text-sm">
+                      <div>
+                        <p className="text-xs text-[#8b95a1]">자산</p>
+                        <p className="font-semibold text-primary-500">{fmt(s.metrics.total_assets)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#8b95a1]">부채</p>
+                        <p className="font-semibold text-negative">{fmt(s.metrics.total_liabilities)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#8b95a1]">월잉여금</p>
+                        <p className="font-semibold text-positive">{fmt(s.metrics.monthly_surplus)}</p>
+                      </div>
+                    </div>
                     {formError && isExpanded && (
                       <p className="mb-4 text-sm text-[#F04452]">{formError}</p>
                     )}
