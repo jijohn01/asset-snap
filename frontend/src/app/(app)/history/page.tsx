@@ -147,7 +147,7 @@ export default function HistoryPage() {
                 <div>
                   <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
                   <div className="mt-1.5 flex items-center gap-2">
-                    <span className={`text-sm font-medium ${s.metrics.net_worth > 0 ? "text-positive" : s.metrics.net_worth < 0 ? "text-negative" : "text-[#333d4b]"}`}>순자산 {fmt(s.metrics.net_worth)}</span>
+                    <span className="text-sm font-semibold text-[#191f28]">순자산 {fmt(s.metrics.net_worth)}</span>
                     {diffInfo && (
                       diffInfo.diff === 0 ? (
                         <span className="text-xs text-[#b0b8c1]">변동없음</span>
