@@ -142,7 +142,7 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => handleRowClick(s.id)}
-                className="group w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-[#f9fafb]"
+                className="w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-[#f9fafb]"
               >
                 <div>
                   <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
@@ -159,11 +159,6 @@ export default function HistoryPage() {
                       )
                     )}
                   </div>
-                  <div className="mt-0.5 flex gap-3 text-xs text-[#b0b8c1] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                    <span>자산 {fmt(s.metrics.total_assets)}</span>
-                    <span>부채 {fmt(s.metrics.total_liabilities)}</span>
-                    <span>잉여금 {fmt(s.metrics.monthly_surplus)}</span>
-                  </div>
                 </div>
                 <ChevronDown
                   size={18}
@@ -178,6 +173,20 @@ export default function HistoryPage() {
               >
                 <div className="overflow-hidden">
                   <div className="border-t border-[#f2f4f6] p-5">
+                    <div className="flex gap-6 mb-5 text-sm">
+                      <div>
+                        <p className="text-xs text-[#8b95a1]">자산</p>
+                        <p className="font-medium text-[#191f28]">{fmt(s.metrics.total_assets)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#8b95a1]">부채</p>
+                        <p className="font-medium text-[#191f28]">{fmt(s.metrics.total_liabilities)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#8b95a1]">월잉여금</p>
+                        <p className="font-medium text-[#191f28]">{fmt(s.metrics.monthly_surplus)}</p>
+                      </div>
+                    </div>
                     {formError && isExpanded && (
                       <p className="mb-4 text-sm text-[#F04452]">{formError}</p>
                     )}
