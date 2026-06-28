@@ -142,25 +142,27 @@ export default function HistoryPage() {
               <button
                 type="button"
                 onClick={() => handleRowClick(s.id)}
-                className="w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-[#f9fafb]"
+                className="group w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-[#f9fafb]"
               >
                 <div>
                   <p className="text-sm font-semibold text-[#191f28]">{fmtMonth(s.snapshot_month)}</p>
-                  <div className="mt-1 flex gap-4 text-xs text-[#8b95a1]">
-                    <span>순자산 {fmt(s.metrics.net_worth)}</span>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <span className="text-sm font-medium text-[#333d4b]">순자산 {fmt(s.metrics.net_worth)}</span>
                     {diffInfo && (
                       diffInfo.diff === 0 ? (
-                        <span className="text-gray-400">─ 변동없음</span>
+                        <span className="text-xs text-[#b0b8c1]">변동없음</span>
                       ) : (
-                        <span className={diffInfo.diff > 0 ? "text-positive" : "text-negative"}>
+                        <span className={`text-xs font-medium ${diffInfo.diff > 0 ? "text-positive" : "text-negative"}`}>
                           {diffInfo.diff > 0 ? "▲" : "▼"} {fmt(Math.abs(diffInfo.diff))}
                           {diffInfo.pct != null && ` (${Math.abs(diffInfo.pct).toFixed(1)}%)`}
                         </span>
                       )
                     )}
+                  </div>
+                  <div className="mt-0.5 flex gap-3 text-xs text-[#b0b8c1] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                     <span>자산 {fmt(s.metrics.total_assets)}</span>
                     <span>부채 {fmt(s.metrics.total_liabilities)}</span>
-                    <span>월잉여금 {fmt(s.metrics.monthly_surplus)}</span>
+                    <span>잉여금 {fmt(s.metrics.monthly_surplus)}</span>
                   </div>
                 </div>
                 <ChevronDown
