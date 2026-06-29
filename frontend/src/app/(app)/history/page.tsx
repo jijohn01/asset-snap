@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { fetchSnapshots, updateSnapshot, deleteSnapshot, type Snapshot, type SnapshotData } from "@/lib/api";
 import SnapshotForm from "@/components/SnapshotForm";
+import ConfirmModal from "@/components/ConfirmModal";
 
 function fmt(val: number) {
   return val.toLocaleString() + "만원";
@@ -33,6 +34,7 @@ export default function HistoryPage() {
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     function load() {
@@ -74,7 +76,6 @@ export default function HistoryPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("이 스냅샷을 삭제할까요?")) return;
     setDeleting(true);
     try {
       await deleteSnapshot(id);
@@ -198,7 +199,7 @@ export default function HistoryPage() {
                       deleting={deleting}
                       error={null}
                       onSave={(m, data) => handleSave(s.id, m, data)}
-                      onDelete={() => handleDelete(s.id)}
+                      onDelete={() => setDeleteTargetId(s.id)}
                     />
                   </div>
                 </div>
@@ -207,6 +208,17 @@ export default function HistoryPage() {
           );
         })}
       </div>
+      <ConfirmModal
+        open={deleteTargetId !== null}
+        title="스냅샷 삭제"
+        description="이 스냅샷을 삭제합니다. 되돌릴 수 없습니다."
+        confirmLabel="삭제"
+        onConfirm={() => {
+          if (deleteTargetId) handleDelete(deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 }
