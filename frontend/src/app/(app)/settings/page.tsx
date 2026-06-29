@@ -527,8 +527,8 @@ export default function SettingsPage() {
         title="장부 탈퇴"
         description={`${leaveTarget?.groupName}에서 탈퇴합니다. 다시 참여하려면 owner의 초대가 필요합니다.`}
         confirmLabel="탈퇴"
-        onConfirm={() => {
-          if (leaveTarget) handleLeaveGroup(leaveTarget.groupId);
+        onConfirm={async () => {
+          if (leaveTarget) await handleLeaveGroup(leaveTarget.groupId);
           setLeaveTarget(null);
         }}
         onCancel={() => setLeaveTarget(null)}
