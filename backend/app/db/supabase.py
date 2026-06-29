@@ -35,11 +35,11 @@ def get_group(group_id: str) -> dict | None:
     return res.data
 
 
-def create_group(name: str, group_type: str, created_by: str) -> dict:
+def create_group(name: str, created_by: str) -> dict:
     db = get_supabase()
     res = (
         db.table("asset_groups")
-        .insert({"name": name, "type": group_type, "created_by": created_by})
+        .insert({"name": name, "created_by": created_by})
         .execute()
     )
     group = res.data[0]
