@@ -17,6 +17,7 @@ import {
   type Member,
 } from "@/lib/api";
 import PasswordChangeSection from "@/components/settings/PasswordChangeSection";
+import ConfirmModal from "@/components/ConfirmModal";
 
 const ROLE_LEFT_BORDER: Record<string, string> = {
   owner:  "#3182f6",
@@ -60,6 +61,7 @@ export default function SettingsPage() {
   const [transferConfirmInput, setTransferConfirmInput] = useState("");
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState("");
+  const [removeTarget, setRemoveTarget] = useState<{ groupId: string; userId: string; name: string } | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -389,7 +391,7 @@ export default function SettingsPage() {
                                     <option value="viewer">viewer</option>
                                   </select>
                                   <button
-                                    onClick={() => handleRemoveMember(group.id, m.user_id)}
+                                    onClick={() => setRemoveTarget({ groupId: group.id, userId: m.user_id, name: m.display_name ?? "이 멤버" })}
                                     className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] active:scale-[0.97] transition-all"
                                   >
                                     제거
@@ -489,6 +491,17 @@ export default function SettingsPage() {
           )}
         </div>
       </section>
+      <ConfirmModal
+        open={removeTarget !== null}
+        title="멤버 제거"
+        description={`${removeTarget?.name}님을 장부에서 제거합니다.`}
+        confirmLabel="제거"
+        onConfirm={() => {
+          if (removeTarget) handleRemoveMember(removeTarget.groupId, removeTarget.userId);
+          setRemoveTarget(null);
+        }}
+        onCancel={() => setRemoveTarget(null)}
+      />
     </div>
   );
 }
