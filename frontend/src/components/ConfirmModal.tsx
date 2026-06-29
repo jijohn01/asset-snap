@@ -24,6 +24,7 @@ export default function ConfirmModal({
   useEffect(() => {
     if (!open) return;
     function handleKey(e: KeyboardEvent) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === "Escape") onCancel();
       if (e.key === "Enter") onConfirm();
     }
