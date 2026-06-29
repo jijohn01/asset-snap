@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, User, Plus, X, Pencil, Check } from "lucide-react";
+import { Users, Plus, X, Pencil, Check } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   fetchGroups,
@@ -104,7 +104,7 @@ export default function SettingsPage() {
     if (!newGroupName.trim()) return;
     setCreatingGroup(true);
     try {
-      const g = await createGroup(newGroupName.trim(), "group");
+      const g = await createGroup(newGroupName.trim());
       setGroups((prev) => [...prev, g]);
       setMembersByGroup((prev) => ({ ...prev, [g.id]: [] }));
       setNewGroupName("");
@@ -184,10 +184,10 @@ export default function SettingsPage() {
   async function handleLeaveGroup(groupId: string) {
     if (!currentUserId) return;
     await removeMember(groupId, currentUserId);
-    const personalGroup = groups.find((g) => g.type === "personal");
+    const nextGroup = groups.find((g) => g.id !== groupId);
     const activeId = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
-    if (activeId === groupId && personalGroup) {
-      setActiveGroupId(personalGroup.id);
+    if (activeId === groupId && nextGroup) {
+      setActiveGroupId(nextGroup.id);
     }
     setGroups((prev) => prev.filter((g) => g.id !== groupId));
   }
@@ -260,9 +260,7 @@ export default function SettingsPage() {
                 {/* Card header */}
                 <div className="flex items-center justify-between px-5 py-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    {group.type === "group"
-                      ? <Users size={15} className="shrink-0 text-[#8b95a1]" />
-                      : <User size={15} className="shrink-0 text-[#8b95a1]" />}
+                    <Users size={15} className="shrink-0 text-[#8b95a1]" />
                     {isEditing ? (
                       <input
                         autoFocus
@@ -308,7 +306,7 @@ export default function SettingsPage() {
                             <Pencil size={13} />
                           </button>
                         )}
-                        {!isOwner && group.type !== "personal" && (
+                        {!isOwner && (
                           <button
                             onClick={() => setLeaveTarget({ groupId: group.id, groupName: group.name })}
                             className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] active:scale-[0.97] transition-all"

@@ -16,7 +16,7 @@ import {
   Label,
 } from "recharts";
 import Link from "next/link";
-import { User, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { colors } from "@/lib/colors";
 import { fetchSnapshots, fetchGroups, type Snapshot, type SnapshotData, type Group } from "@/lib/api";
 
@@ -126,7 +126,7 @@ export default function DashboardPage() {
     function loadGroup() {
       fetchGroups().then((gs) => {
         const savedId = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
-        const current = (savedId && gs.find((g) => g.id === savedId)) || gs.find((g) => g.type === "personal") || gs[0];
+        const current = (savedId && gs.find((g) => g.id === savedId)) || gs[0];
         if (current) setActiveGroup(current);
       }).catch(() => {});
     }
@@ -200,7 +200,7 @@ export default function DashboardPage() {
       {activeGroup && (
         <div className="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold"
           style={{ background: "rgba(100,168,255,0.15)", color: "#2272eb" }}>
-          {activeGroup.type === "group" ? <Users size={11} /> : <User size={11} />}
+          <Users size={11} />
           {activeGroup.name}
         </div>
       )}

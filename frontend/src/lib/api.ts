@@ -5,7 +5,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 export interface Group {
   id: string;
   name: string;
-  type: string;
   role: string;
 }
 
@@ -96,7 +95,6 @@ export async function getDefaultGroupId(): Promise<string> {
   // localStorage 값을 현재 사용자의 그룹 목록으로 검증 — 다른 계정의 stale ID 방지
   const saved = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
   const current = (saved && groups.find((g) => g.id === saved))
-    ?? groups.find((g) => g.type === "personal")
     ?? groups[0];
   if (!current) throw new Error("장부가 없습니다.");
   _groupId = current.id;
@@ -124,11 +122,11 @@ export async function updateGroup(groupId: string, name: string): Promise<Group>
   return res.json();
 }
 
-export async function createGroup(name: string, type: "personal" | "group"): Promise<Group> {
+export async function createGroup(name: string): Promise<Group> {
   const res = await apiFetch(`${API_URL}/api/v1/asset-groups/`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...await authHeader() },
-    body: JSON.stringify({ name, type }),
+    body: JSON.stringify({ name }),
   });
   if (!res.ok) throw new Error("장부 생성에 실패했습니다.");
   return res.json();
