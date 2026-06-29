@@ -4,8 +4,8 @@ const EMAIL = process.env.TEST_EMAIL ?? "test-history@assetnavigator.test";
 const PASSWORD = process.env.TEST_PASSWORD ?? "TestPassword123!";
 
 const MOCK_GROUPS = [
-  { id: "g1", name: "내 장부", type: "personal", role: "owner", member_count: 1 },
-  { id: "g2", name: "가족 장부", type: "group", role: "editor", member_count: 3 },
+  { id: "g1", name: "내 장부", role: "owner", member_count: 1 },
+  { id: "g2", name: "가족 장부", role: "editor", member_count: 3 },
 ];
 
 async function login(page: Page) {
@@ -38,12 +38,12 @@ test.describe("장부 탈퇴", () => {
     await expect(page.getByRole("button", { name: "탈퇴" })).toBeVisible();
   });
 
-  test("personal/owner 장부에 탈퇴 버튼 없음", async ({ page }) => {
+  test("owner 장부에 탈퇴 버튼 없음", async ({ page }) => {
     await mockGroups(page);
     await login(page);
     await page.goto("/settings");
 
-    // "내 장부"(personal, owner) 카드에는 탈퇴 버튼 없음
+    // "내 장부"(owner) 카드에는 탈퇴 버튼 없음
     // owner가 하나이면 탈퇴 버튼 전체 수 = 비owner 장부 수 = 1
     await expect(page.getByRole("button", { name: "탈퇴" })).toHaveCount(1);
   });

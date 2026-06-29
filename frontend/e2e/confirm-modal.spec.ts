@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 const EMAIL = process.env.TEST_EMAIL ?? "test-history@assetnavigator.test";
 const PASSWORD = process.env.TEST_PASSWORD ?? "TestPassword123!";
 
-const MOCK_GROUP = [{ id: "g1", name: "내 장부", type: "personal", role: "owner", member_count: 1 }];
+const MOCK_GROUP = [{ id: "g1", name: "내 장부", role: "owner", member_count: 1 }];
 const MOCK_SNAPSHOTS = [
   {
     id: "s1",
