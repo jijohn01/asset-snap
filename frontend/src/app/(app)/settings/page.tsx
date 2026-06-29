@@ -62,6 +62,7 @@ export default function SettingsPage() {
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState("");
   const [removeTarget, setRemoveTarget] = useState<{ groupId: string; userId: string; name: string } | null>(null);
+  const [leaveTarget, setLeaveTarget] = useState<{ groupId: string; groupName: string } | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -180,6 +181,17 @@ export default function SettingsPage() {
     }));
   }
 
+  async function handleLeaveGroup(groupId: string) {
+    if (!currentUserId) return;
+    await removeMember(groupId, currentUserId);
+    const personalGroup = groups.find((g) => g.type === "personal");
+    const activeId = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
+    if (activeId === groupId && personalGroup) {
+      setActiveGroupId(personalGroup.id);
+    }
+    setGroups((prev) => prev.filter((g) => g.id !== groupId));
+  }
+
   async function handleRenameGroup(group: Group) {
     const trimmed = editingGroupName.trim();
     if (!trimmed || trimmed === group.name) { setEditingGroupId(null); return; }
@@ -294,6 +306,14 @@ export default function SettingsPage() {
                             title="이름 변경"
                           >
                             <Pencil size={13} />
+                          </button>
+                        )}
+                        {!isOwner && group.type !== "personal" && (
+                          <button
+                            onClick={() => setLeaveTarget({ groupId: group.id, groupName: group.name })}
+                            className="rounded-xl px-3 py-1.5 text-xs font-semibold text-[#f04452] bg-[rgba(240,68,82,0.08)] hover:bg-[rgba(240,68,82,0.15)] active:scale-[0.97] transition-all"
+                          >
+                            탈퇴
                           </button>
                         )}
                         <button
@@ -501,6 +521,20 @@ export default function SettingsPage() {
           setRemoveTarget(null);
         }}
         onCancel={() => setRemoveTarget(null)}
+      />
+      <ConfirmModal
+        open={leaveTarget !== null}
+        title="장부 탈퇴"
+        description={`${leaveTarget?.groupName}에서 탈퇴합니다. 다시 참여하려면 owner의 초대가 필요합니다.`}
+        confirmLabel="탈퇴"
+        onConfirm={async () => {
+          try {
+            if (leaveTarget) await handleLeaveGroup(leaveTarget.groupId);
+          } finally {
+            setLeaveTarget(null);
+          }
+        }}
+        onCancel={() => setLeaveTarget(null)}
       />
     </div>
   );
