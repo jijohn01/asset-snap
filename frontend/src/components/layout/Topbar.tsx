@@ -20,7 +20,10 @@ export default function Topbar() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
   const [open, setOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [userInitial, setUserInitial] = useState("U");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const avatarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchGroups()
@@ -35,12 +38,28 @@ export default function Topbar() {
         if (current) setActiveGroup(current);
       })
       .catch(() => {});
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", data.user.id)
+        .single()
+        .then(({ data: p }) => {
+          const name = p?.display_name || data.user.email || "U";
+          setUserInitial(name.charAt(0).toUpperCase());
+        });
+    });
   }, []);
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false);
+      }
+      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+        setAvatarOpen(false);
       }
     }
     document.addEventListener("mousedown", handleOutsideClick);
@@ -62,32 +81,29 @@ export default function Topbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 w-full items-center border-b border-[#e5e8eb] bg-white px-6 gap-4">
+    <header className="sticky top-0 z-50 flex h-14 w-full items-center bg-[#0f172a] px-6 gap-4">
       {/* 로고 */}
-      <Link
-        href="/"
-        className="text-lg hover:opacity-75 transition-opacity shrink-0"
-      >
-        <span className="font-bold text-primary-500">GET</span>
-        <span className="font-bold text-ink">DON</span>
+      <Link href="/" className="text-lg hover:opacity-80 transition-opacity shrink-0">
+        <span className="font-bold text-primary-400">GET</span>
+        <span className="font-bold text-white">DON</span>
       </Link>
 
       {/* 그룹 전환기 */}
       <div className="relative shrink-0" ref={dropdownRef}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-1.5 rounded-xl bg-[#f2f4f6] px-3 py-1.5 text-sm font-medium text-[#333d4b] hover:bg-[#e8ecf0] transition-colors"
+          className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-1.5 text-sm font-medium text-white/80 hover:bg-white/15 transition-colors"
         >
           {activeGroup?.type === "group" ? (
-            <Users size={13} className="shrink-0 text-[#8b95a1]" />
+            <Users size={13} className="shrink-0 text-white/50" />
           ) : (
-            <User size={13} className="shrink-0 text-[#8b95a1]" />
+            <User size={13} className="shrink-0 text-white/50" />
           )}
           <span className="max-w-[120px] truncate">{activeGroup?.name ?? "장부 선택"}</span>
           <ChevronDown
             size={13}
             className={clsx(
-              "shrink-0 text-[#8b95a1] transition-transform duration-150",
+              "shrink-0 text-white/50 transition-transform duration-150",
               open && "rotate-180"
             )}
           />
@@ -140,23 +156,38 @@ export default function Topbar() {
             key={href}
             href={href}
             className={clsx(
-              "px-3 py-2 text-sm font-medium transition-colors",
+              "px-3 py-2 text-sm font-medium transition-colors rounded-lg",
               pathname === href
-                ? "text-[#3182f6] border-b-2 border-[#3182f6]"
-                : "text-[#8b95a1] hover:text-[#333d4b] hover:bg-[#f2f4f6] rounded-lg"
+                ? "text-white"
+                : "text-white/50 hover:text-white/80 hover:bg-white/10"
             )}
           >
             {label}
           </Link>
         ))}
-        <div className="mx-2 h-4 w-px bg-[#e5e8eb]" />
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-[#8b95a1] hover:text-[#333d4b] hover:bg-[#f2f4f6] transition-colors"
-        >
-          <LogOut size={14} />
-          로그아웃
-        </button>
+
+        <div className="mx-2 h-4 w-px bg-white/20" />
+
+        {/* 사용자 아바타 */}
+        <div className="relative" ref={avatarRef}>
+          <button
+            onClick={() => setAvatarOpen((v) => !v)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-sm font-bold text-white hover:bg-primary-400 active:scale-[0.97] transition-all"
+          >
+            {userInitial}
+          </button>
+          {avatarOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-36 rounded-xl border border-[#e5e8eb] bg-white shadow-[0_4px_12px_rgba(0,0,0,0.12)] overflow-hidden">
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[#f04452] hover:bg-[rgba(240,68,82,0.05)] transition-colors"
+              >
+                <LogOut size={13} />
+                로그아웃
+              </button>
+            </div>
+          )}
+        </div>
       </nav>
     </header>
   );

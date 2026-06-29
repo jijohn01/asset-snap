@@ -16,8 +16,14 @@ import {
   Label,
 } from "recharts";
 import Link from "next/link";
-import { User, Users } from "lucide-react";
+import { User, Users, Shield, TrendingUp, Banknote } from "lucide-react";
 import { colors } from "@/lib/colors";
+
+const METRIC_ICONS = {
+  "자기자본비율": { Icon: Shield,    bg: "rgba(49,130,246,0.1)",  fg: "#3182f6" },
+  "월소득":       { Icon: TrendingUp, bg: "rgba(3,178,108,0.1)",   fg: "#03b26c" },
+  "월잉여금":     { Icon: Banknote,   bg: "rgba(139,92,246,0.1)",  fg: "#8b5cf6" },
+} as const;
 import { fetchSnapshots, fetchGroups, type Snapshot, type SnapshotData, type Group } from "@/lib/api";
 
 const ASSET_CATEGORIES = [
@@ -106,10 +112,12 @@ function fmt(val: number) {
   return val.toLocaleString() + "만원";
 }
 
-function DiffBadge({ amount, pct, isRatio }: { amount: number; pct: number; isRatio: boolean }) {
+function DiffBadge({ amount, pct, isRatio, light = false }: { amount: number; pct: number; isRatio: boolean; light?: boolean }) {
   const up = amount >= 0;
   const sign = up ? "▲" : "▼";
-  const cls = up ? "text-positive" : "text-negative";
+  const cls = light
+    ? (up ? "text-emerald-300" : "text-rose-300")
+    : (up ? "text-positive" : "text-negative");
   const text = isRatio
     ? `${sign} ${Math.abs(amount).toFixed(1)}%p`
     : `${sign} ${Math.abs(amount).toLocaleString()}만원 (${Math.abs(pct).toFixed(1)}%)`;
@@ -197,13 +205,6 @@ export default function DashboardPage() {
       <p className="mt-1 text-sm text-[#8b95a1]">
         {latest ? `${latest.snapshot_month.slice(0, 7)} 스냅샷 기준` : "최신 스냅샷 기준"} 자산 현황
       </p>
-      {activeGroup && (
-        <div className="mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold"
-          style={{ background: "rgba(100,168,255,0.15)", color: "#2272eb" }}>
-          {activeGroup.type === "group" ? <Users size={11} /> : <User size={11} />}
-          {activeGroup.name}
-        </div>
-      )}
 
       {error && !loading && (
         <div className="mt-4 rounded-xl bg-[rgba(240,68,82,0.06)] px-4 py-3 text-sm text-[#F04452]">
@@ -212,21 +213,27 @@ export default function DashboardPage() {
       )}
 
       {/* 순자산 히어로 */}
-      <div className="mt-6 rounded-xl bg-white px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-        <p className="text-xs font-medium uppercase tracking-wider text-[#8b95a1]">순자산</p>
+      <div className="mt-6 rounded-2xl bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] px-6 py-6 shadow-[0_8px_32px_rgba(37,99,235,0.35)]">
+        {activeGroup && (
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white/80">
+            {activeGroup.type === "group" ? <Users size={10} /> : <User size={10} />}
+            {activeGroup.name}
+          </div>
+        )}
+        <p className="text-xs font-medium text-white/60 uppercase tracking-wider">순자산</p>
         {loading ? (
           <div className="mt-3 animate-pulse space-y-2">
-            <div className="h-8 w-48 rounded-lg bg-[#F0F0F0]" />
-            <div className="h-4 w-24 rounded-lg bg-[#F0F0F0]" />
+            <div className="h-9 w-48 rounded-lg bg-white/20" />
+            <div className="h-4 w-24 rounded-lg bg-white/20" />
           </div>
         ) : !hasData ? (
-          <p className="mt-1 text-[30px] font-bold text-[#e5e8eb]">—</p>
+          <p className="mt-1 text-[32px] font-bold text-white/30">—</p>
         ) : (
           <>
-            <p className="mt-1 text-[30px] font-bold text-[#191f28] tabular-nums">{heroCard!.display}</p>
+            <p className="mt-1 text-[32px] font-bold text-white tabular-nums">{heroCard!.display}</p>
             {heroDiff && (
               <div className="mt-2">
-                <DiffBadge amount={heroDiff.amount} pct={heroDiff.pct} isRatio={false} />
+                <DiffBadge amount={heroDiff.amount} pct={heroDiff.pct} isRatio={false} light />
               </div>
             )}
           </>
@@ -256,10 +263,19 @@ export default function DashboardPage() {
                 prevVal !== undefined && prevVal !== 0
                   ? { amount: curr - prevVal, pct: ((curr - prevVal) / Math.abs(prevVal)) * 100 }
                   : null;
+              const meta = METRIC_ICONS[label as keyof typeof METRIC_ICONS];
               return (
                 <div key={label} className="rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                  {meta && (
+                    <div
+                      className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg"
+                      style={{ backgroundColor: meta.bg }}
+                    >
+                      <meta.Icon size={15} style={{ color: meta.fg }} />
+                    </div>
+                  )}
                   <p className="text-xs font-medium text-[#8b95a1]">{label}</p>
-                  <p className="mt-2 text-[22px] font-bold text-[#191f28] tabular-nums">{display}</p>
+                  <p className="mt-1 text-[22px] font-bold text-[#191f28] tabular-nums">{display}</p>
                   {diff && (
                     <div className="mt-1">
                       <DiffBadge amount={diff.amount} pct={diff.pct} isRatio={isRatio} />
