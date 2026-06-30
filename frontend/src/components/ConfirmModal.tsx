@@ -8,6 +8,8 @@ interface ConfirmModalProps {
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmDisabled?: boolean;
+  children?: React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -18,6 +20,8 @@ export default function ConfirmModal({
   description,
   confirmLabel = "확인",
   cancelLabel = "취소",
+  confirmDisabled,
+  children,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
@@ -47,6 +51,7 @@ export default function ConfirmModal({
         {description && (
           <p className="mt-1.5 text-sm text-[#8b95a1]">{description}</p>
         )}
+        {children}
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
@@ -58,7 +63,8 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            className="rounded-xl px-4 py-2 text-sm font-semibold text-white bg-[#F04452] hover:bg-[#d93a47] transition-colors"
+            disabled={confirmDisabled}
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-white bg-[#F04452] hover:bg-[#d93a47] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {confirmLabel}
           </button>

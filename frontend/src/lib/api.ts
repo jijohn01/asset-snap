@@ -179,6 +179,13 @@ export async function removeMember(groupId: string, userId: string): Promise<voi
   });
 }
 
+export async function deleteGroup(groupId: string): Promise<void> {
+  await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}`, {
+    method: "DELETE",
+    headers: await authHeader(),
+  });
+}
+
 export async function transferOwnership(groupId: string, targetUserId: string): Promise<void> {
   const res = await apiFetch(`${API_URL}/api/v1/asset-groups/${groupId}/transfer-ownership`, {
     method: "POST",
