@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { fetchSnapshots, updateSnapshot, deleteSnapshot, type Snapshot, type SnapshotData } from "@/lib/api";
+import { fetchSnapshots, updateSnapshot, deleteSnapshot, type Snapshot, type SnapshotData, NoGroupsError } from "@/lib/api";
 import SnapshotForm from "@/components/SnapshotForm";
 import ConfirmModal from "@/components/ConfirmModal";
 
@@ -29,6 +29,7 @@ export default function HistoryPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [noGroups, setNoGroups] = useState(false);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -40,11 +41,18 @@ export default function HistoryPage() {
     function load() {
       setLoading(true);
       setError(null);
+      setNoGroups(false);
       fetchSnapshots()
         .then((data) =>
           setSnapshots(data.sort((a, b) => b.snapshot_month.localeCompare(a.snapshot_month)))
         )
-        .catch((e) => setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다."))
+        .catch((e) => {
+          if (e instanceof NoGroupsError) {
+            setNoGroups(true);
+          } else {
+            setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다.");
+          }
+        })
         .finally(() => setLoading(false));
     }
     load();
@@ -95,12 +103,14 @@ export default function HistoryPage() {
           <h2 className="text-2xl font-bold text-[#191f28]">월별 이력</h2>
           <p className="mt-1 text-sm text-[#8b95a1]">스냅샷 타임라인</p>
         </div>
-        <Link
-          href="/snapshot/new"
-          className="rounded-xl bg-[#3182f6] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] transition-all"
-        >
-          + 새 스냅샷
-        </Link>
+        {!noGroups && (
+          <Link
+            href="/snapshot/new"
+            className="rounded-xl bg-[#3182f6] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2272eb] hover:shadow-[0_4px_12px_rgba(49,130,246,0.35)] active:scale-[0.97] transition-all"
+          >
+            + 새 스냅샷
+          </Link>
+        )}
       </div>
 
       <div className="mt-6 space-y-3">
@@ -120,6 +130,14 @@ export default function HistoryPage() {
         {!loading && error && (
           <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
             <p className="text-sm text-[#F04452]">{error}</p>
+          </div>
+        )}
+        {!loading && noGroups && (
+          <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+            <p className="text-sm font-semibold text-[#191f28]">아직 장부가 없어요.</p>
+            <Link href="/settings" className="mt-2 inline-block text-sm text-primary-500 hover:underline">
+              장부 만들기
+            </Link>
           </div>
         )}
         {!loading && !error && snapshots.length === 0 && (
