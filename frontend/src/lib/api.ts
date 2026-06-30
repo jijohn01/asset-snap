@@ -2,6 +2,13 @@ import { supabase } from "./supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+export class NoGroupsError extends Error {
+  constructor() {
+    super("장부가 없습니다.");
+    this.name = "NoGroupsError";
+  }
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -96,7 +103,7 @@ export async function getDefaultGroupId(): Promise<string> {
   const saved = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
   const current = (saved && groups.find((g) => g.id === saved))
     ?? groups[0];
-  if (!current) throw new Error("장부가 없습니다.");
+  if (!current) throw new NoGroupsError();
   _groupId = current.id;
   if (typeof window !== "undefined") localStorage.setItem("activeGroupId", _groupId);
   return _groupId;
