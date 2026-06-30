@@ -210,9 +210,10 @@ export default function SettingsPage() {
     if (!deleteTarget || deleteNameInput !== deleteTarget.groupName) return;
     setDeleteLoading(true);
     setDeleteError("");
+    const remaining = groups.filter((g) => g.id !== deleteTarget.groupId);
     try {
       await deleteGroup(deleteTarget.groupId);
-      setGroups((prev) => prev.filter((g) => g.id !== deleteTarget.groupId));
+      setGroups(remaining);
       setMembersByGroup((prev) => {
         const next = { ...prev };
         delete next[deleteTarget.groupId];
@@ -220,12 +221,10 @@ export default function SettingsPage() {
       });
       const activeId = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
       if (activeId === deleteTarget.groupId) {
-        const remaining = groups.filter((g) => g.id !== deleteTarget.groupId);
         if (remaining.length > 0) {
           setActiveGroupId(remaining[0].id);
         } else {
           resetGroupIdCache();
-          if (typeof window !== "undefined") localStorage.removeItem("activeGroupId");
         }
       }
       window.dispatchEvent(new CustomEvent("group-changed"));
