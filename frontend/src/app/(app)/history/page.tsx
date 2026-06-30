@@ -30,6 +30,7 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [noGroups, setNoGroups] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -58,7 +59,7 @@ export default function HistoryPage() {
     load();
     window.addEventListener("group-changed", load);
     return () => window.removeEventListener("group-changed", load);
-  }, []);
+  }, [retryCount]);
 
   function handleRowClick(id: string) {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -128,8 +129,23 @@ export default function HistoryPage() {
             </div>
           ))}
         {!loading && error && (
-          <div className="rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-            <p className="text-sm text-[#F04452]">{error}</p>
+          <div className="rounded-xl bg-white px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+            <div className="flex items-center gap-3">
+              <p className="flex-1 text-sm text-[#F04452]">{error}</p>
+              <button
+                onClick={() => setRetryCount((c) => c + 1)}
+                className="shrink-0 rounded-lg bg-[rgba(240,68,82,0.08)] px-3 py-1.5 text-xs font-medium text-[#F04452] hover:bg-[rgba(240,68,82,0.16)] transition-colors"
+              >
+                다시 시도
+              </button>
+              <button
+                onClick={() => setError(null)}
+                className="shrink-0 text-sm text-[#8b95a1] hover:text-[#333d4b] transition-colors"
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
         {!loading && noGroups && (

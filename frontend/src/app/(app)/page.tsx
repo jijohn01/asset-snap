@@ -122,6 +122,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [noGroups, setNoGroups] = useState(false);
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     function loadGroup() {
@@ -153,7 +154,7 @@ export default function DashboardPage() {
     load();
     window.addEventListener("group-changed", load);
     return () => window.removeEventListener("group-changed", load);
-  }, []);
+  }, [retryCount]);
 
   const latest = snapshots.at(-1);
   const prev = snapshots.at(-2);
@@ -214,8 +215,21 @@ export default function DashboardPage() {
       )}
 
       {error && !loading && (
-        <div className="mt-4 rounded-xl bg-[rgba(240,68,82,0.06)] px-4 py-3 text-sm text-[#F04452]">
-          {error}
+        <div className="mt-4 flex items-center gap-3 rounded-xl bg-[rgba(240,68,82,0.06)] px-4 py-3 text-sm text-[#F04452]">
+          <span className="flex-1">{error}</span>
+          <button
+            onClick={() => setRetryCount((c) => c + 1)}
+            className="shrink-0 rounded-lg bg-[rgba(240,68,82,0.12)] px-3 py-1 text-xs font-medium hover:bg-[rgba(240,68,82,0.2)] transition-colors"
+          >
+            다시 시도
+          </button>
+          <button
+            onClick={() => setError(null)}
+            className="shrink-0 text-[#F04452] hover:opacity-70 transition-opacity"
+            aria-label="닫기"
+          >
+            ✕
+          </button>
         </div>
       )}
 

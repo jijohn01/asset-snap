@@ -20,22 +20,29 @@ export default function Topbar() {
   const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
+  const [groupsError, setGroupsError] = useState(false);
   const [open, setOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchGroups()
-      .then((gs) => {
-        setGroups(gs);
-        const savedId =
-          typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
-        const current =
-          (savedId && gs.find((g) => g.id === savedId)) ||
-          gs[0];
-        if (current) setActiveGroup(current);
-      })
-      .catch(() => {});
+    function loadGroups() {
+      setGroupsError(false);
+      fetchGroups()
+        .then((gs) => {
+          setGroups(gs);
+          const savedId =
+            typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
+          const current =
+            (savedId && gs.find((g) => g.id === savedId)) ||
+            gs[0];
+          if (current) setActiveGroup(current);
+        })
+        .catch(() => setGroupsError(true));
+    }
+    loadGroups();
+    window.addEventListener("group-changed", loadGroups);
+    return () => window.removeEventListener("group-changed", loadGroups);
   }, []);
 
   useEffect(() => {
@@ -93,6 +100,9 @@ export default function Topbar() {
 
           {open && (
             <div className="absolute left-0 top-full mt-1.5 min-w-[180px] rounded-xl border border-[#e5e8eb] bg-white shadow-[0_4px_12px_rgba(0,0,0,0.12)] overflow-hidden">
+              {groupsError && (
+                <div className="px-4 py-3 text-xs text-[#F04452]">그룹을 불러오지 못했습니다.</div>
+              )}
               {groups.map((g) => (
                 <button
                   key={g.id}

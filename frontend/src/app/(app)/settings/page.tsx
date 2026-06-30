@@ -116,6 +116,7 @@ export default function SettingsPage() {
       setMembersByGroup((prev) => ({ ...prev, [g.id]: [] }));
       setNewGroupName("");
       setShowNewGroupForm(false);
+      window.dispatchEvent(new CustomEvent("group-changed"));
     } finally {
       setCreatingGroup(false);
     }
@@ -242,6 +243,7 @@ export default function SettingsPage() {
     const updated = await updateGroup(group.id, trimmed);
     setGroups((prev) => prev.map((g) => g.id === group.id ? { ...g, name: updated.name } : g));
     setEditingGroupId(null);
+    window.dispatchEvent(new CustomEvent("group-changed"));
   }
 
   function handleSwitchGroup(group: Group) {
