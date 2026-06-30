@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, ChevronDown, User, Users, Plus } from "lucide-react";
+import { LogOut, ChevronDown, Users, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -32,7 +32,6 @@ export default function Topbar() {
           typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
         const current =
           (savedId && gs.find((g) => g.id === savedId)) ||
-          gs.find((g) => g.type === "personal") ||
           gs[0];
         if (current) setActiveGroup(current);
       })
@@ -81,11 +80,7 @@ export default function Topbar() {
             onClick={() => setOpen((v) => !v)}
             className="flex items-center gap-1.5 rounded-xl bg-[#f2f4f6] px-3 py-1.5 text-sm font-medium text-[#333d4b] hover:bg-[#e8ecf0] transition-colors"
           >
-            {activeGroup?.type === "group" ? (
-              <Users size={13} className="shrink-0 text-[#8b95a1]" />
-            ) : (
-              <User size={13} className="shrink-0 text-[#8b95a1]" />
-            )}
+            <Users size={13} className="shrink-0 text-[#8b95a1]" />
             <span className="max-w-[120px] truncate">{activeGroup?.name ?? "장부 선택"}</span>
             <ChevronDown
               size={13}
@@ -109,11 +104,7 @@ export default function Topbar() {
                       : "text-[#333d4b] hover:bg-[#f2f4f6]"
                   )}
                 >
-                  {g.type === "group" ? (
-                    <Users size={13} className="shrink-0" />
-                  ) : (
-                    <User size={13} className="shrink-0" />
-                  )}
+                  <Users size={13} className="shrink-0" />
                   <span className="truncate flex-1">{g.name}</span>
                   {g.id === activeGroup?.id && (
                     <span className="text-[#3182f6] text-xs ml-auto">✓</span>

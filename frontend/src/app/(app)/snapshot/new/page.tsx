@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SnapshotForm, { type SnapshotData } from "@/components/SnapshotForm";
-import { fetchPrefill, saveSnapshot } from "@/lib/api";
+import Link from "next/link";
+import { fetchPrefill, saveSnapshot, NoGroupsError } from "@/lib/api";
 
 function currentMonth() {
   const now = new Date();
@@ -16,12 +17,18 @@ export default function SnapshotNewPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [noGroups, setNoGroups] = useState(false);
 
   const month = currentMonth();
 
   useEffect(() => {
     fetchPrefill(month)
       .then(setInitialData)
+      .catch((e) => {
+        if (e instanceof NoGroupsError) {
+          setNoGroups(true);
+        }
+      })
       .finally(() => setLoading(false));
   }, [month]);
 
@@ -46,6 +53,13 @@ export default function SnapshotNewPage() {
       <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         {loading ? (
           <p className="text-sm text-gray-400">불러오는 중...</p>
+        ) : noGroups ? (
+          <div className="py-4 text-center">
+            <p className="text-sm text-[#191f28]">장부가 없어요. 먼저 장부를 만들어주세요.</p>
+            <Link href="/settings" className="mt-2 inline-block text-sm text-primary-500 hover:underline">
+              장부 만들기
+            </Link>
+          </div>
         ) : (
           <SnapshotForm
             initialMonth={month}

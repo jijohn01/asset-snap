@@ -25,9 +25,7 @@ def list_groups(user_id: str = Depends(get_current_user)):
 
 @router.post("/", response_model=AssetGroupResponse, status_code=201)
 def create_group(body: AssetGroupCreate, user_id: str = Depends(get_current_user)):
-    if body.type not in ("personal", "group"):
-        raise HTTPException(status_code=400, detail="type은 personal 또는 group")
-    return db.create_group(body.name, body.type, user_id)
+    return db.create_group(body.name, user_id)
 
 
 @router.get("/{group_id}", response_model=AssetGroupResponse)

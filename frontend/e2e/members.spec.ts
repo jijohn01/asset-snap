@@ -4,7 +4,7 @@ const EMAIL = process.env.TEST_EMAIL ?? "";
 const PASSWORD = process.env.TEST_PASSWORD ?? "";
 
 // 오너 권한의 그룹만 설정 페이지에서 멤버 관리 UI가 노출됨
-const MOCK_GROUPS = [{ id: "g1", name: "내 장부", type: "personal", role: "owner", member_count: 1 }];
+const MOCK_GROUPS = [{ id: "g1", name: "내 장부", role: "owner", member_count: 1 }];
 const MOCK_MEMBER_USER2 = { user_id: "user2", display_name: "게스트", role: "editor" };
 
 async function login(page: Page) {
@@ -18,7 +18,7 @@ async function login(page: Page) {
 async function setupGroupMocks(page: Page, members: object[], onPostGroup?: () => object) {
   await page.route("**/api/v1/asset-groups/", async (route) => {
     if (route.request().method() === "POST") {
-      const newGroup = onPostGroup?.() ?? { id: "g2", name: "우리 가족", type: "group", role: "owner", member_count: 1 };
+      const newGroup = onPostGroup?.() ?? { id: "g2", name: "우리 가족", role: "owner", member_count: 1 };
       return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify(newGroup) });
     }
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(MOCK_GROUPS) });
