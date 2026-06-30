@@ -105,7 +105,7 @@ export default function SettingsPage() {
     setCreatingGroup(true);
     try {
       const g = await createGroup(newGroupName.trim());
-      setGroups((prev) => [...prev, g]);
+      setGroups((prev) => [...prev, { ...g, role: "owner" }]);
       setMembersByGroup((prev) => ({ ...prev, [g.id]: [] }));
       setNewGroupName("");
       setShowNewGroupForm(false);
