@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Plus, X, Pencil, Check } from "lucide-react";
+import { Users, Plus, X, Pencil, Check, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import {
   fetchGroups,
@@ -12,7 +12,9 @@ import {
   updateMemberRole,
   removeMember,
   transferOwnership,
+  deleteGroup,
   setActiveGroupId,
+  resetGroupIdCache,
   type Group,
   type Member,
 } from "@/lib/api";
@@ -63,6 +65,11 @@ export default function SettingsPage() {
   const [transferError, setTransferError] = useState("");
   const [removeTarget, setRemoveTarget] = useState<{ groupId: string; userId: string; name: string } | null>(null);
   const [leaveTarget, setLeaveTarget] = useState<{ groupId: string; groupName: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ groupId: string; groupName: string } | null>(null);
+  const [deleteStep, setDeleteStep] = useState<1 | 2>(1);
+  const [deleteNameInput, setDeleteNameInput] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     async function init() {
@@ -192,6 +199,44 @@ export default function SettingsPage() {
     setGroups((prev) => prev.filter((g) => g.id !== groupId));
   }
 
+  function handleDeleteCancel() {
+    setDeleteTarget(null);
+    setDeleteStep(1);
+    setDeleteNameInput("");
+    setDeleteError("");
+  }
+
+  async function handleDeleteGroup() {
+    if (!deleteTarget || deleteNameInput !== deleteTarget.groupName) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      await deleteGroup(deleteTarget.groupId);
+      setGroups((prev) => prev.filter((g) => g.id !== deleteTarget.groupId));
+      setMembersByGroup((prev) => {
+        const next = { ...prev };
+        delete next[deleteTarget.groupId];
+        return next;
+      });
+      const activeId = typeof window !== "undefined" ? localStorage.getItem("activeGroupId") : null;
+      if (activeId === deleteTarget.groupId) {
+        const remaining = groups.filter((g) => g.id !== deleteTarget.groupId);
+        if (remaining.length > 0) {
+          setActiveGroupId(remaining[0].id);
+        } else {
+          resetGroupIdCache();
+          if (typeof window !== "undefined") localStorage.removeItem("activeGroupId");
+        }
+      }
+      window.dispatchEvent(new CustomEvent("group-changed"));
+      handleDeleteCancel();
+    } catch {
+      setDeleteError("삭제에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   async function handleRenameGroup(group: Group) {
     const trimmed = editingGroupName.trim();
     if (!trimmed || trimmed === group.name) { setEditingGroupId(null); return; }
@@ -304,6 +349,15 @@ export default function SettingsPage() {
                             title="이름 변경"
                           >
                             <Pencil size={13} />
+                          </button>
+                        )}
+                        {isOwner && (
+                          <button
+                            onClick={() => { setDeleteTarget({ groupId: group.id, groupName: group.name }); setDeleteStep(1); }}
+                            className="rounded-lg p-1.5 text-[#b0b8c1] hover:text-[#F04452] hover:bg-[rgba(240,68,82,0.08)] active:scale-[0.97] transition-all"
+                            title="장부 삭제"
+                          >
+                            <Trash2 size={13} />
                           </button>
                         )}
                         {!isOwner && (
@@ -534,6 +588,43 @@ export default function SettingsPage() {
         }}
         onCancel={() => setLeaveTarget(null)}
       />
+      <ConfirmModal
+        open={deleteTarget !== null && deleteStep === 1}
+        title="장부를 삭제할까요?"
+        description={
+          (() => {
+            const count = deleteTarget ? (membersByGroup[deleteTarget.groupId]?.length ?? 0) : 0;
+            const prefix = count > 0 ? `멤버가 ${count}명 있습니다. ` : "";
+            return `${prefix}이 장부를 삭제하면 모든 스냅샷 데이터와 멤버 정보가 영구 삭제됩니다.`;
+          })()
+        }
+        confirmLabel="계속"
+        onConfirm={() => setDeleteStep(2)}
+        onCancel={handleDeleteCancel}
+      />
+      <ConfirmModal
+        open={deleteTarget !== null && deleteStep === 2}
+        title="정말 삭제할까요?"
+        confirmLabel="삭제"
+        confirmDisabled={deleteNameInput !== (deleteTarget?.groupName ?? "") || deleteLoading}
+        onConfirm={handleDeleteGroup}
+        onCancel={handleDeleteCancel}
+      >
+        <div className="mt-3 space-y-2">
+          <p className="text-sm text-[#8b95a1]">
+            장부 이름을 입력하면 영구 삭제됩니다.
+          </p>
+          <input
+            type="text"
+            value={deleteNameInput}
+            onChange={(e) => { setDeleteNameInput(e.target.value); setDeleteError(""); }}
+            placeholder={deleteTarget?.groupName}
+            className="w-full rounded-xl border border-[#e5e8eb] px-3 py-2 text-sm focus:outline-none focus:border-[#3182f6]"
+            autoFocus
+          />
+          {deleteError && <p className="text-xs text-[#F04452]">{deleteError}</p>}
+        </div>
+      </ConfirmModal>
     </div>
   );
 }
