@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import { Users } from "lucide-react";
 import { colors } from "@/lib/colors";
-import { fetchSnapshots, fetchGroups, type Snapshot, type SnapshotData, type Group } from "@/lib/api";
+import { fetchSnapshots, fetchGroups, type Snapshot, type SnapshotData, type Group, NoGroupsError } from "@/lib/api";
 
 const ASSET_CATEGORIES = [
   { key: "cash_savings",      label: "현금/저축",  color: colors.primary[500] },
@@ -120,6 +120,7 @@ export default function DashboardPage() {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [noGroups, setNoGroups] = useState(false);
   const [activeGroup, setActiveGroup] = useState<Group | null>(null);
 
   useEffect(() => {
@@ -134,12 +135,19 @@ export default function DashboardPage() {
     function load() {
       setLoading(true);
       setError(null);
+      setNoGroups(false);
       loadGroup();
       fetchSnapshots()
         .then((data) =>
           setSnapshots(data.sort((a, b) => a.snapshot_month.localeCompare(b.snapshot_month)))
         )
-        .catch((e) => setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다."))
+        .catch((e) => {
+          if (e instanceof NoGroupsError) {
+            setNoGroups(true);
+          } else {
+            setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다.");
+          }
+        })
         .finally(() => setLoading(false));
     }
     load();
@@ -208,6 +216,19 @@ export default function DashboardPage() {
       {error && !loading && (
         <div className="mt-4 rounded-xl bg-[rgba(240,68,82,0.06)] px-4 py-3 text-sm text-[#F04452]">
           {error}
+        </div>
+      )}
+
+      {!loading && !error && noGroups && (
+        <div className="mt-6 rounded-xl bg-white p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+          <p className="text-sm font-semibold text-[#191f28]">아직 장부가 없어요.</p>
+          <p className="mt-1 text-sm text-[#8b95a1]">첫 장부를 만들어보세요.</p>
+          <Link
+            href="/settings"
+            className="mt-4 inline-block rounded-xl bg-[#3182f6] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2272eb] transition-colors"
+          >
+            장부 만들기
+          </Link>
         </div>
       )}
 
