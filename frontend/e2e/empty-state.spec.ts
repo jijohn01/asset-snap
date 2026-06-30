@@ -63,3 +63,24 @@ test.describe("빈 장부 상태 — 히스토리 (#95)", () => {
     await expect(page.getByText("장부가 없습니다.")).not.toBeVisible({ timeout: 5000 });
   });
 });
+
+test.describe("빈 장부 상태 — 스냅샷 입력 (#95)", () => {
+  test.beforeEach(async ({ page }) => {
+    if (!PASSWORD) test.skip();
+    await page.route("**/api/v1/asset-groups/", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(EMPTY_GROUPS) })
+    );
+    await login(page);
+    await page.goto("/snapshot/new");
+  });
+
+  test("빈 장부 안내 메시지 표시", async ({ page }) => {
+    await expect(page.getByText("장부가 없어요. 먼저 장부를 만들어주세요.")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("link", { name: "장부 만들기" })).toBeVisible();
+  });
+
+  test("스냅샷 폼 미표시", async ({ page }) => {
+    await expect(page.getByText("장부가 없어요. 먼저 장부를 만들어주세요.")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("button", { name: /저장/i })).not.toBeVisible();
+  });
+});
